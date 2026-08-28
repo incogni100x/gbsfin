@@ -2,6 +2,7 @@ import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   BankIcon,
+  ArrowRight01Icon,
   ShieldCheckIcon,
   Wallet02Icon,
 } from "@hugeicons/core-free-icons";
@@ -143,9 +144,9 @@ function DashboardPage() {
               </LayerCard.Secondary>
 
               <LayerCard.Primary
-                className="!bg-[var(--color-background-primary-default)] px-4 py-3 ring-[var(--color-separator-border)] md:p-4"
+                className="!bg-[var(--color-accent-600)] px-4 py-3 text-[var(--color-neutral-50)] ring-[var(--color-separator-border)] md:p-4"
               >
-                <span className="text-body-medium text-[var(--color-text-secondary)]">
+                <span className="text-body-medium text-[var(--color-neutral-50)]">
                   Available balance
                 </span>
                 <strong className="financial-number text-title-2-medium sm:text-title-1-medium">
@@ -163,10 +164,11 @@ function DashboardPage() {
         </h2>
         <div className="mt-3">
           <Link
-            className="text-body-medium inline-flex min-h-9 items-center rounded-2lg border border-[var(--color-border-button-default)] px-3 text-[var(--color-text-primary)] no-underline transition-colors hover:bg-[var(--color-background-primary-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus-ring)]"
+            className="text-body-medium inline-flex min-h-9 items-center gap-2 rounded-2lg bg-[var(--color-accent-600)] px-3 text-white no-underline transition-colors hover:bg-[var(--color-accent-500)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus-ring)]"
             to="/manage-accounts"
           >
             Manage accounts
+            <HugeiconsIcon aria-hidden="true" icon={ArrowRight01Icon} size={16} strokeWidth={1.75} />
           </Link>
         </div>
       </section>

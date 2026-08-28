@@ -33,6 +33,8 @@ export interface FileUploadProps {
   allowedExtensions?: readonly string[];
   /** Maximum accepted file size in bytes. */
   maxBytes?: number;
+  /** Prefer a front or rear device camera when the browser supports capture. */
+  capture?: "user" | "environment";
   /** Overrides the icon shown while a file uploads. */
   renderFileIcon?: (file: File) => ReactNode;
   className?: string;
@@ -118,6 +120,7 @@ export function FileUpload({
   onUploadComplete,
   allowedExtensions = DEFAULT_EXTENSIONS,
   maxBytes = DEFAULT_MAX_BYTES,
+  capture,
   renderFileIcon,
   className,
 }: FileUploadProps) {
@@ -232,6 +235,7 @@ export function FileUpload({
       <input
         ref={inputRef}
         type="file"
+        capture={capture}
         accept={allowedExtensions.map((extension) => `.${extension}`).join(",")}
         className="sr-only"
         tabIndex={-1}

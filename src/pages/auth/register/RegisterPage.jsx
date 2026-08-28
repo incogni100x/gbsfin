@@ -50,7 +50,11 @@ function RegisterPage() {
   const [accountTypes, setAccountTypes] = useState([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [details, setDetails] = useState(emptyDetails);
-  const [documents, setDocuments] = useState({ id: null, residence: null });
+  const [documents, setDocuments] = useState({
+    id: null,
+    residence: null,
+    selfie: null,
+  });
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -139,8 +143,8 @@ function RegisterPage() {
       }
     }
 
-    if (currentStep === 5 && (!documents.id || !documents.residence)) {
-      throw new Error("Upload both required identity documents.");
+    if (currentStep === 5 && (!documents.id || !documents.residence || !documents.selfie)) {
+      throw new Error("Upload your ID, proof of address, and a selfie.");
     }
   };
 
@@ -324,7 +328,7 @@ function RegisterPage() {
                   value={otp}
                 />
                 <Button
-                  className="mt-5"
+                  className="mt-5 !bg-transparent !text-[var(--color-accent-600)] hover:!bg-transparent hover:!text-[var(--color-accent-500)] active:!bg-transparent"
                   disabled={loading}
                   onClick={resendCode}
                   size="small"
@@ -433,7 +437,7 @@ function RegisterPage() {
             )}
 
             {currentStep === 5 && (
-              <div className="grid gap-5 sm:grid-cols-2">
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 <div>
                   <h3 className="text-headline-medium">
                     Government-issued ID
@@ -472,6 +476,25 @@ function RegisterPage() {
                   {documents.residence && (
                     <p className="text-body-2-medium mt-2 text-[var(--color-state-success-text)]">
                       Selected: {documents.residence.name}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-headline-medium">Selfie verification</h3>
+                  <p className="text-body-2-medium mb-3 text-[var(--color-text-secondary)]">
+                    Upload a clear selfie or take one with your device camera.
+                  </p>
+                  <FileUpload
+                    allowedExtensions={["jpg", "jpeg", "png"]}
+                    capture="user"
+                    maxBytes={10 * 1024 * 1024}
+                    onUploadComplete={(file) =>
+                      setDocuments((current) => ({ ...current, selfie: file }))
+                    }
+                  />
+                  {documents.selfie && (
+                    <p className="text-body-2-medium mt-2 text-[var(--color-state-success-text)]">
+                      Selected: {documents.selfie.name}
                     </p>
                   )}
                 </div>

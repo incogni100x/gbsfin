@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
+import { ArrowRight01Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useAuth } from "@/auth/useAuth.js";
 import { Button } from "@/components/base/buttons/button";
@@ -59,8 +59,9 @@ export default function BankToUsdTransferDialog({ account }) {
   };
   return (
     <>
-      <Button onClick={() => setOpen(true)} size="small" variant="secondary">
+      <Button className="gap-2" onClick={() => setOpen(true)} size="small" variant="secondary">
         Transfer to USD balance
+        <HugeiconsIcon aria-hidden="true" icon={ArrowRight01Icon} size={16} strokeWidth={1.75} />
       </Button>
       <Dialog
         open={open}

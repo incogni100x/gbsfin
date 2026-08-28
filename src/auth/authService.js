@@ -110,15 +110,17 @@ export async function completeRegistration({
 
   if (!user) throw new Error("Your registration session has expired.");
 
-  const [idDocumentPath, proofOfResidencePath] = await Promise.all([
-    uploadIdentityDocument(client, user.id, "government-id", documents.id),
-    uploadIdentityDocument(
-      client,
-      user.id,
-      "proof-of-residence",
-      documents.residence,
-    ),
-  ]);
+  const [idDocumentPath, proofOfResidencePath, selfieDocumentPath] =
+    await Promise.all([
+      uploadIdentityDocument(client, user.id, "government-id", documents.id),
+      uploadIdentityDocument(
+        client,
+        user.id,
+        "proof-of-residence",
+        documents.residence,
+      ),
+      uploadIdentityDocument(client, user.id, "selfie", documents.selfie),
+    ]);
 
   const { error: profileError } = await client
     .from("profiles")
@@ -128,6 +130,7 @@ export async function completeRegistration({
       last_name: details.lastName,
       phone_number: details.phoneNumber,
       proof_of_residence_path: proofOfResidencePath,
+      selfie_document_path: selfieDocumentPath,
     })
     .eq("id", user.id);
   throwIfError(profileError);

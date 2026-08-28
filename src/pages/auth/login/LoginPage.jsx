@@ -152,7 +152,7 @@ function LoginPage() {
                 value={otp}
               />
               <Button
-                className="justify-self-center"
+                className="justify-self-center !bg-transparent !text-[var(--color-accent-600)] hover:!bg-transparent hover:!text-[var(--color-accent-500)] active:!bg-transparent"
                 disabled={loading}
                 onClick={resendCode}
                 size="small"

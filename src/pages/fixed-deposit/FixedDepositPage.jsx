@@ -59,9 +59,9 @@ function StatCard({ detail, label, value }) {
       <LayerCard.Secondary className="!bg-[var(--color-background-secondary-default)] px-4 py-3">
         <span className="text-body-medium">{label}</span>
       </LayerCard.Secondary>
-      <LayerCard.Primary className="!bg-[var(--color-background-primary-default)] px-4 py-3 ring-[var(--color-separator-border)]">
+      <LayerCard.Primary className="!bg-[var(--color-accent-600)] px-4 py-3 text-[var(--color-neutral-50)] ring-[var(--color-separator-border)]">
         <strong className="financial-number text-title-1-medium">{value}</strong>
-        <span className="text-body-2-medium text-[var(--color-text-secondary)]">
+        <span className="text-body-2-medium text-[var(--color-neutral-50)]">
           {detail}
         </span>
       </LayerCard.Primary>

@@ -103,14 +103,14 @@ function TransferPage() {
                     •••• {account.accountNumber.slice(-4)}
                   </span>
                 </LayerCard.Secondary>
-                <LayerCard.Primary className="!bg-[var(--color-background-primary-default)] px-4 py-4 ring-[var(--color-separator-border)]">
+                <LayerCard.Primary className="!bg-[var(--color-accent-600)] px-4 py-4 text-[var(--color-neutral-50)] ring-[var(--color-separator-border)]">
                   <strong className="financial-number text-title-2-medium">
                     {account.balance.toLocaleString("en-US", {
                       style: "currency",
                       currency: "USD",
                     })}
                   </strong>
-                  <span className="text-body-2-medium text-[var(--color-text-secondary)]">
+                  <span className="text-body-2-medium text-[var(--color-neutral-50)]">
                     Available balance
                   </span>
                   <div className="mt-3">
