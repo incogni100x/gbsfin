@@ -71,7 +71,8 @@ function WithdrawalHistoryTable({ withdrawals }) {
             </TableCell>
             <TableCell>
               <Badge className={statusClassNames[withdrawal.status]}>
-                {withdrawal.status[0].toUpperCase() + withdrawal.status.slice(1)}
+                {withdrawal.status[0].toUpperCase() +
+                  withdrawal.status.slice(1)}
               </Badge>
             </TableCell>
           </TableRow>

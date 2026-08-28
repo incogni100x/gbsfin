@@ -19,7 +19,11 @@ function TransactionHistoryPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
-  const { data: transactions = [], error, isPending } = useQuery({
+  const {
+    data: transactions = [],
+    error,
+    isPending,
+  } = useQuery({
     enabled: Boolean(user?.id),
     queryFn: () => getTransactions(user.id),
     queryKey: transactionsQueryKey(user?.id),
@@ -37,13 +41,15 @@ function TransactionHistoryPage() {
       const matchesDirection =
         direction === "all" || transaction.direction === direction;
       const matchesStatus = status === "all" || transaction.status === status;
-      const matchesDate =
-        !date || transaction.created_at.slice(0, 10) === date;
+      const matchesDate = !date || transaction.created_at.slice(0, 10) === date;
       return matchesSearch && matchesDirection && matchesStatus && matchesDate;
     });
   }, [date, direction, search, status, transactions]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / PAGE_SIZE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredTransactions.length / PAGE_SIZE),
+  );
   const safePage = Math.min(page, totalPages);
   const pageItems = filteredTransactions.slice(
     (safePage - 1) * PAGE_SIZE,

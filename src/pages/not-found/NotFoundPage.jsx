@@ -26,7 +26,9 @@ function NotFoundPage() {
         </p>
 
         <div className="mt-7 flex flex-wrap justify-center gap-3">
-          <Button onClick={() => navigate("/dashboard")}>Return to dashboard</Button>
+          <Button onClick={() => navigate("/dashboard")}>
+            Return to dashboard
+          </Button>
           <Button onClick={() => navigate("/login")} variant="secondary">
             Sign in
           </Button>

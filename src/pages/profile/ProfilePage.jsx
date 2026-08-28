@@ -35,9 +35,9 @@ function formatDate(value) {
 
 function formatStatus(value) {
   if (!value) return "Pending";
-  return value.replaceAll("_", " ").replace(/^./, (letter) =>
-    letter.toUpperCase(),
-  );
+  return value
+    .replaceAll("_", " ")
+    .replace(/^./, (letter) => letter.toUpperCase());
 }
 
 function ProfilePage() {
@@ -178,10 +178,19 @@ function ProfilePage() {
 
       <section className="rounded-[var(--radius-2lg)] border border-[color-mix(in_srgb,var(--color-separator-border)_45%,transparent)] bg-[color-mix(in_srgb,var(--color-background-primary-default)_65%,transparent)] p-5 sm:p-6">
         <div className="flex items-start gap-3">
-          <HugeiconsIcon aria-hidden="true" className="mt-1 text-[var(--color-accent-600)]" icon={UserEdit01Icon} size={22} />
+          <HugeiconsIcon
+            aria-hidden="true"
+            className="mt-1 text-[var(--color-accent-600)]"
+            icon={UserEdit01Icon}
+            size={22}
+          />
           <div>
-            <h2 className="text-title-2-medium text-[var(--color-text-primary)]">Personal information</h2>
-            <p className="text-body-2-medium mt-1 text-[var(--color-text-secondary)]">Keep your contact details current.</p>
+            <h2 className="text-title-2-medium text-[var(--color-text-primary)]">
+              Personal information
+            </h2>
+            <p className="text-body-2-medium mt-1 text-[var(--color-text-secondary)]">
+              Keep your contact details current.
+            </p>
           </div>
         </div>
         <form className="mt-5 grid gap-5 sm:grid-cols-2" onSubmit={saveProfile}>
@@ -233,10 +242,19 @@ function ProfilePage() {
 
       <section className="rounded-[var(--radius-2lg)] border border-[color-mix(in_srgb,var(--color-separator-border)_45%,transparent)] bg-[color-mix(in_srgb,var(--color-background-primary-default)_65%,transparent)] p-5 sm:p-6">
         <div className="flex items-start gap-3">
-          <HugeiconsIcon aria-hidden="true" className="mt-1 text-[var(--color-accent-600)]" icon={UserIdVerificationIcon} size={22} />
+          <HugeiconsIcon
+            aria-hidden="true"
+            className="mt-1 text-[var(--color-accent-600)]"
+            icon={UserIdVerificationIcon}
+            size={22}
+          />
           <div>
-            <h2 className="text-title-2-medium text-[var(--color-text-primary)]">Account details</h2>
-            <p className="text-body-2-medium mt-1 text-[var(--color-text-secondary)]">Review your membership and referral information.</p>
+            <h2 className="text-title-2-medium text-[var(--color-text-primary)]">
+              Account details
+            </h2>
+            <p className="text-body-2-medium mt-1 text-[var(--color-text-secondary)]">
+              Review your membership and referral information.
+            </p>
           </div>
         </div>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -261,7 +279,9 @@ function ProfilePage() {
               Your referral code
             </dt>
             <dd className="mt-1 flex items-center gap-2 text-[var(--color-text-primary)]">
-              <span className="account-number text-body-medium">{profile.referral_code || "Not assigned"}</span>
+              <span className="account-number text-body-medium">
+                {profile.referral_code || "Not assigned"}
+              </span>
               {profile.referral_code ? (
                 <Button onClick={copyReferralCode} size="small" variant="ghost">
                   Copy
@@ -282,10 +302,19 @@ function ProfilePage() {
 
       <section className="rounded-[var(--radius-2lg)] border border-[color-mix(in_srgb,var(--color-separator-border)_45%,transparent)] bg-[color-mix(in_srgb,var(--color-background-primary-default)_65%,transparent)] p-5 sm:p-6">
         <div className="flex items-start gap-3">
-          <HugeiconsIcon aria-hidden="true" className="mt-1 text-[var(--color-accent-600)]" icon={LockPasswordIcon} size={22} />
+          <HugeiconsIcon
+            aria-hidden="true"
+            className="mt-1 text-[var(--color-accent-600)]"
+            icon={LockPasswordIcon}
+            size={22}
+          />
           <div>
-            <h2 className="text-title-2-medium text-[var(--color-text-primary)]">Security</h2>
-            <p className="text-body-2-medium mt-1 text-[var(--color-text-secondary)]">Update the password used to access your account.</p>
+            <h2 className="text-title-2-medium text-[var(--color-text-primary)]">
+              Security
+            </h2>
+            <p className="text-body-2-medium mt-1 text-[var(--color-text-secondary)]">
+              Update the password used to access your account.
+            </p>
           </div>
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--color-separator-border)] py-4">
@@ -309,10 +338,18 @@ function ProfilePage() {
       <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
         <DialogContent className="gap-6 sm:max-w-md sm:p-7">
           <DialogHeader className="gap-2 pr-6 text-left">
-            <DialogTitle className="text-title-3-medium sm:text-title-2-medium">Change password</DialogTitle>
-            <DialogDescription>Choose a strong password you do not use elsewhere.</DialogDescription>
+            <DialogTitle className="text-title-3-medium sm:text-title-2-medium">
+              Change password
+            </DialogTitle>
+            <DialogDescription>
+              Choose a strong password you do not use elsewhere.
+            </DialogDescription>
           </DialogHeader>
-          <form className="grid gap-4" id="change-password-form" onSubmit={changePassword}>
+          <form
+            className="grid gap-4"
+            id="change-password-form"
+            onSubmit={changePassword}
+          >
             <Input
               autoComplete="new-password"
               label="New password"
@@ -334,7 +371,11 @@ function ProfilePage() {
           </form>
           <DialogFooter className="gap-3 [&_button]:w-full sm:[&_button]:w-auto">
             <DialogClose render={<Button variant="secondary">Cancel</Button>} />
-            <Button disabled={passwordSaving || !newPassword || !confirmPassword} form="change-password-form" type="submit">
+            <Button
+              disabled={passwordSaving || !newPassword || !confirmPassword}
+              form="change-password-form"
+              type="submit"
+            >
               {passwordSaving ? "Updating…" : "Update password"}
             </Button>
           </DialogFooter>

@@ -50,7 +50,9 @@ function StatCard({ detail, label, value }) {
         <span className="text-body-medium">{label}</span>
       </LayerCard.Secondary>
       <LayerCard.Primary className="!bg-[var(--color-background-primary-default)] px-4 py-3 ring-[var(--color-separator-border)]">
-        <strong className="financial-number text-title-1-medium">{value}</strong>
+        <strong className="financial-number text-title-1-medium">
+          {value}
+        </strong>
         <span className="text-body-2-medium text-[var(--color-text-secondary)]">
           {detail}
         </span>
@@ -138,7 +140,11 @@ export default function LoansPage() {
     queryFn: getCurrentUserAccounts,
     staleTime: 30000,
   });
-  const { data: loans = [], error, isPending: loansPending } = useQuery({
+  const {
+    data: loans = [],
+    error,
+    isPending: loansPending,
+  } = useQuery({
     enabled: !!user?.id,
     queryKey: loanKeys.all(user?.id),
     queryFn: () => getLoans(user.id),
@@ -175,7 +181,9 @@ export default function LoansPage() {
       setMessage("");
       setRequestSubmitted(true);
       await queryClient.invalidateQueries({ queryKey: loanKeys.all(user?.id) });
-      await queryClient.invalidateQueries({ queryKey: ["transactions", user?.id] });
+      await queryClient.invalidateQueries({
+        queryKey: ["transactions", user?.id],
+      });
     },
     onError: (e) => setMessage(e.message),
   });
@@ -338,7 +346,9 @@ export default function LoansPage() {
               <span className="text-[var(--color-text-secondary)]">
                 Estimated monthly payment
               </span>{" "}
-              <span className="financial-number text-body-medium">{money(monthlyPayment)}</span>
+              <span className="financial-number text-body-medium">
+                {money(monthlyPayment)}
+              </span>
             </div>
             <FeedbackMessage tone="error">{message}</FeedbackMessage>
             <Button className="w-fit" type="submit">
@@ -397,7 +407,9 @@ export default function LoansPage() {
             <span className="text-body-medium">
               {selectedType?.name} · {selectedPlan?.duration_months} months
             </span>
-            <span className="financial-number text-title-3-medium">{money(principal)}</span>
+            <span className="financial-number text-title-3-medium">
+              {money(principal)}
+            </span>
             <span className="text-body-medium text-[var(--color-text-secondary)]">
               Estimated payment {money(monthlyPayment)} monthly
             </span>
@@ -434,7 +446,8 @@ export default function LoansPage() {
               Loan request submitted
             </DialogTitle>
             <DialogDescription>
-              Your request is pending review. You can follow its status in the pending loans table.
+              Your request is pending review. You can follow its status in the
+              pending loans table.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="[&_button]:w-full sm:[&_button]:w-auto">

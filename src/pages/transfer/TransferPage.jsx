@@ -91,35 +91,35 @@ function TransferPage() {
         {accountsPending ? (
           <ContentSkeleton label="Loading bank accounts" />
         ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {usdBankAccounts.map((account) => (
-            <LayerCard
-              className="w-full !bg-[var(--color-background-primary-default)] text-[var(--color-text-primary)] ring-[var(--color-separator-border)]"
-              key={account.id}
-            >
-              <LayerCard.Secondary className="!bg-[var(--color-background-secondary-default)] px-4 py-3 text-[var(--color-text-secondary)]">
-                <span className="text-body-medium">{account.name}</span>
-                <span className="text-body-2-medium">
-                  •••• {account.accountNumber.slice(-4)}
-                </span>
-              </LayerCard.Secondary>
-              <LayerCard.Primary className="!bg-[var(--color-background-primary-default)] px-4 py-4 ring-[var(--color-separator-border)]">
-                <strong className="financial-number text-title-2-medium">
-                  {account.balance.toLocaleString("en-US", {
-                    style: "currency",
-                    currency: "USD",
-                  })}
-                </strong>
-                <span className="text-body-2-medium text-[var(--color-text-secondary)]">
-                  Available balance
-                </span>
-                <div className="mt-3">
-                  <BankToUsdTransferDialog account={account} />
-                </div>
-              </LayerCard.Primary>
-            </LayerCard>
-          ))}
-        </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {usdBankAccounts.map((account) => (
+              <LayerCard
+                className="w-full !bg-[var(--color-background-primary-default)] text-[var(--color-text-primary)] ring-[var(--color-separator-border)]"
+                key={account.id}
+              >
+                <LayerCard.Secondary className="!bg-[var(--color-background-secondary-default)] px-4 py-3 text-[var(--color-text-secondary)]">
+                  <span className="text-body-medium">{account.name}</span>
+                  <span className="text-body-2-medium">
+                    •••• {account.accountNumber.slice(-4)}
+                  </span>
+                </LayerCard.Secondary>
+                <LayerCard.Primary className="!bg-[var(--color-background-primary-default)] px-4 py-4 ring-[var(--color-separator-border)]">
+                  <strong className="financial-number text-title-2-medium">
+                    {account.balance.toLocaleString("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                    })}
+                  </strong>
+                  <span className="text-body-2-medium text-[var(--color-text-secondary)]">
+                    Available balance
+                  </span>
+                  <div className="mt-3">
+                    <BankToUsdTransferDialog account={account} />
+                  </div>
+                </LayerCard.Primary>
+              </LayerCard>
+            ))}
+          </div>
         )}
       </section>
 
@@ -131,7 +131,8 @@ function TransferPage() {
           Currency balances
         </h2>
         <p className="text-body-2-medium mt-1 mb-4 text-[var(--color-text-secondary)]">
-          Transfer between enabled currencies or withdraw to an external account.
+          Transfer between enabled currencies or withdraw to an external
+          account.
         </p>
         {error ? (
           <p className="text-body-medium text-[var(--color-text-error-primary)]">

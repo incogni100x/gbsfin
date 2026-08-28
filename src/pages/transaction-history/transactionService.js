@@ -97,6 +97,8 @@ export async function getTransactions(userId, { limit = 200 } = {}) {
   }));
 
   return [...ledger, ...deposits, ...transfers, ...withdrawals]
-    .sort((left, right) => new Date(right.created_at) - new Date(left.created_at))
+    .sort(
+      (left, right) => new Date(right.created_at) - new Date(left.created_at),
+    )
     .slice(0, pageLimit);
 }
