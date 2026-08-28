@@ -27,6 +27,7 @@ function MarketingTestimonial() {
             <img
               alt="Customer portrait"
               className="mx-auto size-10 rounded-full object-cover"
+              loading="lazy"
               src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
             />
             <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-body-medium">

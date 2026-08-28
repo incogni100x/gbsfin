@@ -223,7 +223,7 @@ export function FileUpload({
       }}
       className={cx(
         "group relative h-[164px] w-full shrink-0 rounded-2xl outline-none",
-        "transition-colors duration-300 ease-out",
+        "transition-colors duration-200 ease-out",
         busy ? "bg-background-primary-default" : "cursor-pointer bg-background-secondary-default",
         "focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-border-focus-ring",
         className,
@@ -249,7 +249,7 @@ export function FileUpload({
           dragOver
             ? "border-border-button-active"
             : "border-border-checkbox-default group-hover:border-border-button-active",
-          "transition-[opacity,border-color] duration-300 ease-out",
+          "transition-[opacity,border-color] duration-200 ease-out",
           busy ? "opacity-0" : "opacity-100",
         )}
       />
@@ -259,7 +259,7 @@ export function FileUpload({
         viewBox={`0 0 ${box.width} ${box.height}`}
         preserveAspectRatio="none"
         className={cx(
-          "pointer-events-none absolute inset-0 size-full transition-opacity duration-300 ease-out",
+          "pointer-events-none absolute inset-0 size-full transition-opacity duration-200 ease-out",
           busy ? "opacity-100" : "opacity-0",
         )}
       >

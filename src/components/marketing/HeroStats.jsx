@@ -39,12 +39,10 @@ function HeroStats() {
           money feel simple.
         </p>
       </div>
-      <div className="mx-auto mt-10 grid grid-cols-1 gap-px rounded-xl bg-[var(--color-separator-border)] sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
+      <div className="mx-auto mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-xl bg-[var(--color-separator-border)] sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => (
           <article
-            className={`flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 bg-[var(--color-background-primary-default)] p-4 text-left sm:p-6 ${
-              index === 0 ? "rounded-l-xl" : ""
-            } ${index === stats.length - 1 ? "rounded-r-xl" : ""}`}
+            className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 bg-[var(--color-background-primary-default)] p-4 text-left sm:p-6"
             key={stat.label}
           >
             <span className="text-body-medium text-[var(--color-text-secondary)]">

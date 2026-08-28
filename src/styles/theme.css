@@ -63,6 +63,7 @@
    * Extra step between lg (8) and xl (12). Used by medium-size buttons.
    * Figma name: radius/2lg.
    * --------------------------------------------------------------------------*/
+  --radius-lg: 8px;
   --radius-2lg: 10px;
   --radius-notification-card: 10px;
 

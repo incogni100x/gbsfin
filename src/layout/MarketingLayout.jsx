@@ -47,7 +47,7 @@ function MarketingLayout() {
             {navigationItems.map((item) => (
               item.to.includes("#") ? (
                 <Link
-                  className="text-body-medium text-[var(--color-text-secondary)] no-underline transition-colors duration-150 hover:text-[var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-border-focus-ring)] motion-reduce:transition-none"
+                  className="text-body-medium inline-flex min-h-8 items-center px-1 text-[var(--color-text-secondary)] no-underline transition-colors duration-150 hover:text-[var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-border-focus-ring)] motion-reduce:transition-none"
                   key={item.to}
                   to={item.to}
                 >
@@ -56,7 +56,7 @@ function MarketingLayout() {
               ) : (
                 <NavLink
                   className={({ isActive }) =>
-                    `text-body-medium no-underline transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-border-focus-ring)] motion-reduce:transition-none ${
+                    `text-body-medium inline-flex min-h-8 items-center px-1 no-underline transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-border-focus-ring)] motion-reduce:transition-none ${
                       isActive
                         ? "text-[var(--color-accent-600)]"
                         : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"

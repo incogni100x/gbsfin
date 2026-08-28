@@ -51,7 +51,7 @@ function MarketingFooter() {
                   {group.links.map((link) => (
                     <li key={link.to}>
                       <Link
-                        className="text-body-medium text-[var(--color-text-secondary)] no-underline transition-colors duration-150 hover:text-[var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus-ring)] motion-reduce:transition-none"
+                        className="text-body-medium inline-flex min-h-8 items-center text-[var(--color-text-secondary)] no-underline transition-colors duration-150 hover:text-[var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus-ring)] motion-reduce:transition-none"
                         to={link.to}
                       >
                         {link.label}
@@ -69,7 +69,7 @@ function MarketingFooter() {
             © {new Date().getFullYear()} Global Stripe Fin. All rights reserved.
           </p>
           <a
-            className="text-body-2-medium mt-3 inline-block text-[var(--color-text-secondary)] no-underline transition-colors duration-150 hover:text-[var(--color-text-primary)] sm:mt-0"
+            className="text-body-2-medium mt-3 inline-flex min-h-8 items-center text-[var(--color-text-secondary)] no-underline transition-colors duration-150 hover:text-[var(--color-text-primary)] sm:mt-0"
             href="mailto:support@globalstripefin.com"
           >
             support@globalstripefin.com
