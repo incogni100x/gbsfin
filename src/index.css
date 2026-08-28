@@ -1,0 +1,52 @@
+@source "../node_modules/@cloudflare/kumo/dist/**/*.{js,jsx,ts,tsx}";
+@import "@cloudflare/kumo/styles/tailwind";
+@import "./styles/globals.css";
+
+@font-face {
+  font-family: "Inter";
+  src: url("./assets/fonts/InterVariable.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  --font-inter: "Inter";
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+[data-slot="dialog-title"] {
+  text-wrap: balance;
+}
+
+p,
+[data-slot="dialog-description"] {
+  text-wrap: pretty;
+}
+
+table,
+.financial-number {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "calt" 1;
+}
+
+.account-number {
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-feature-settings: "tnum" 1, "zero" 1, "ss02" 1, "calt" 1;
+}
+
+/* Kumo positions the popup inside a transformed wrapper. Raise that wrapper
+   above the dashboard drawer's z-index stacking context. */
+body > div > div:has(> .notification-popover) {
+  z-index: 100;
+}

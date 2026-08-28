@@ -1,0 +1,3 @@
+-- Production reference data is inserted by the migration because account types
+-- and security questions are required in every environment. Add disposable
+-- local-only demo records here when the application data model is ready.

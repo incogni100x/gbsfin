@@ -1,0 +1,52 @@
+.logo-loop {
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
+}
+
+.logo-loop__track {
+  align-items: center;
+  animation: logo-loop-scroll 28s linear infinite;
+  display: flex;
+  gap: 3rem;
+  width: max-content;
+}
+
+.logo-loop:hover .logo-loop__track {
+  animation-play-state: paused;
+}
+
+.logo-loop__item {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  height: 2rem;
+  justify-content: center;
+  min-width: 7rem;
+}
+
+.logo-loop__item img {
+  display: block;
+  height: 1.5rem;
+  max-width: 8rem;
+  object-fit: contain;
+  width: auto;
+}
+
+@keyframes logo-loop-scroll {
+  to {
+    transform: translateX(calc(-50% - 1.5rem));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-loop__track {
+    animation: none;
+  }
+}

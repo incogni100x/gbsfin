@@ -1,0 +1,17 @@
+function AboutPage() {
+  return (
+    <section className="mx-auto w-[calc(100%-2rem)] max-w-[1200px] py-16 sm:w-[calc(100%-3rem)] sm:py-24">
+      <div className="max-w-3xl">
+        <p className="text-body-medium text-[var(--color-accent-600)]">
+          About us
+        </p>
+        <h1 className="text-title-1-medium mt-3">Banking without borders</h1>
+        <p className="text-title-3-medium mt-4 text-[var(--color-text-secondary)]">
+          Our company story and mission will be added here.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+export default AboutPage;
