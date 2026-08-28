@@ -152,7 +152,6 @@ const inputStyles = sortCx({
     "min-w-0 flex-1 bg-transparent border-0 outline-none p-0 m-0",
     "font-sans text-body-regular text-text-primary pl-1",
     "placeholder:text-text-tertiary",
-    "focus:placeholder:text-text-primary",
     "disabled:text-input-disabled-text disabled:placeholder:text-input-disabled-text",
     "disabled:cursor-not-allowed",
     "aria-invalid:placeholder:text-text-error-placeholder",

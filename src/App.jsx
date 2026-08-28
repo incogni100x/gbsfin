@@ -12,6 +12,7 @@ import LoansPage from "./pages/loans/LoansPage.jsx";
 import ContactPage from "./pages/marketing/contact/ContactPage.jsx";
 import HomePage from "./pages/marketing/home/HomePage.jsx";
 import LegalPage from "./pages/marketing/legal/LegalPage.jsx";
+import LinkedAccountsPage from "./pages/linked-accounts/LinkedAccountsPage.jsx";
 import NotFoundPage from "./pages/not-found/NotFoundPage.jsx";
 import ProfilePage from "./pages/profile/ProfilePage.jsx";
 import TransactionHistoryPage from "./pages/transaction-history/TransactionHistoryPage.jsx";
@@ -47,6 +48,7 @@ function App() {
           <Route path="/transfer" element={<TransferPage />} />
           <Route path="/fixed-deposit" element={<FixedDepositPage />} />
           <Route path="/loans" element={<LoansPage />} />
+          <Route path="/manage-accounts" element={<LinkedAccountsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route
             path="/transaction-history"

@@ -126,22 +126,22 @@ function DepositPage() {
             >
               <LayerCard.Secondary className="!bg-[var(--color-background-secondary-default)] px-4 py-3 text-[var(--color-text-secondary)]">
                 <span className="text-body-medium">{currency.code}</span>
-                <Badge
-                  className={
-                    currency.request?.status === "rejected"
-                      ? "bg-[var(--color-background-tertiary-error)] text-[var(--color-text-error-primary)]"
-                      : undefined
-                  }
-                  color={currency.isEnabled ? "primary" : "neutral"}
-                >
-                  {currency.isEnabled
-                    ? "Available"
-                    : currency.request?.status === "pending"
+                {!currency.isEnabled && (
+                  <Badge
+                    className={
+                      currency.request?.status === "rejected"
+                        ? "bg-[var(--color-background-tertiary-error)] text-[var(--color-text-error-primary)]"
+                        : undefined
+                    }
+                    color="neutral"
+                  >
+                    {currency.request?.status === "pending"
                       ? "Pending"
                       : currency.request?.status === "rejected"
                         ? "Rejected"
                         : "Not enabled"}
-                </Badge>
+                  </Badge>
+                )}
               </LayerCard.Secondary>
               <LayerCard.Primary className="!bg-[var(--color-background-primary-default)] px-4 py-4 ring-[var(--color-separator-border)]">
                 <strong className="financial-number text-title-2-medium">

@@ -117,8 +117,8 @@ function RegisterPage() {
       if (details.password !== details.confirmPassword) {
         throw new Error("The passwords do not match.");
       }
-      if (details.password.length < 10) {
-        throw new Error("Your password must be at least 10 characters.");
+      if (details.password.length < 8) {
+        throw new Error("Your password must be at least 8 characters.");
       }
     }
 
@@ -193,7 +193,7 @@ function RegisterPage() {
 
   if (complete) {
     return (
-      <main className="grid min-h-svh place-items-center bg-[color-mix(in_srgb,var(--color-blue-50)_20%,var(--color-background-full))] px-4 py-10">
+      <main className="grid min-h-svh place-items-center bg-[var(--color-background-full)] px-4 py-10">
         <SuccessState
           action={
             <Button onClick={() => navigate("/dashboard", { replace: true })}>
@@ -222,7 +222,7 @@ function RegisterPage() {
   };
 
   return (
-    <main className="min-h-svh bg-[color-mix(in_srgb,var(--color-blue-50)_20%,var(--color-background-full))] px-4 py-8 sm:py-10">
+    <main className="min-h-svh bg-[var(--color-background-full)] px-4 py-8 sm:py-10">
       <div className="mx-auto w-full max-w-3xl">
         <Link
           className="text-title-2-semibold flex items-center justify-center gap-2 text-[var(--color-text-primary)] no-underline"

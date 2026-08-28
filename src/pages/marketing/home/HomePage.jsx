@@ -17,7 +17,7 @@ const partnerLogos = [
 function HomePage() {
   return (
     <section
-      className="min-h-[calc(100svh-8rem)] bg-white pt-10 sm:pt-14 lg:pt-16"
+      className="min-h-[calc(100svh-8rem)] bg-[var(--color-background-full)] pt-10 sm:pt-14 lg:pt-16"
     >
       <div className="mx-auto w-full max-w-[1000px] px-4 text-center sm:px-6">
         <h1 className="text-display-4-medium mx-auto max-w-9xl text-left text-balance md:text-center md:text-display-3-medium">

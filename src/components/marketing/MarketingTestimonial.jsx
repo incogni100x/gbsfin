@@ -6,7 +6,7 @@ function MarketingTestimonial() {
     >
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,var(--color-accent-100),white)] opacity-30"
+        className="absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,var(--color-accent-900),var(--color-background-full))] opacity-50"
       />
       <div
         aria-hidden="true"

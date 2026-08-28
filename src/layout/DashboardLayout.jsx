@@ -1,5 +1,4 @@
 import { Drawer } from "@base-ui/react/drawer";
-import { Tabs } from "@base-ui/react/tabs";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   BankIcon,
@@ -9,8 +8,8 @@ import {
   PiggyBankIcon,
   TransactionHistoryIcon,
 } from "@hugeicons/core-free-icons";
-import { forwardRef } from "react";
-import { Link, Outlet, useHref, useLinkClickHandler, useLocation } from "react-router";
+import { Tab, TabList, TabPanel, Tabs } from "@/components/base/tabs/tabs";
+import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import DashboardHeaderActions from "./DashboardHeaderActions.jsx";
 import MobileNavigationDrawer from "./MobileNavigationDrawer.jsx";
 import NotificationPopover from "./NotificationPopover.jsx";
@@ -49,37 +48,21 @@ const dashboardTabs = [
   },
 ];
 
-const RouterTabLink = forwardRef(function RouterTabLink(
-  { onClick, to, ...props },
-  forwardedRef,
-) {
-  const href = useHref(to);
-  const handleLinkClick = useLinkClickHandler(to);
-
-  const handleClick = (event) => {
-    onClick?.(event);
-
-    if (!event.defaultPrevented) {
-      handleLinkClick(event);
-    }
-  };
-
-  return <a {...props} href={href} onClick={handleClick} ref={forwardedRef} />;
-});
-
 function DashboardLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const activeTab = dashboardTabs.find(
     (tab) => tab.path === location.pathname,
   )?.value;
+  const tabSelectionProps = activeTab ? { selectedKey: activeTab } : {};
 
   return (
     <Drawer.Provider>
-      <div className="relative min-h-svh overflow-hidden bg-[color-mix(in_srgb,var(--color-blue-50)_20%,var(--color-background-full))]">
-        <Drawer.IndentBackground className="absolute inset-0 bg-[color-mix(in_srgb,var(--color-blue-50)_20%,var(--color-background-full))]" />
+      <div className="relative min-h-svh overflow-hidden bg-[var(--color-background-full)]">
+        <Drawer.IndentBackground className="absolute inset-0 bg-[var(--color-background-full)]" />
         <Drawer.Indent className="relative z-10 min-h-svh origin-top bg-[var(--color-background-full)] transition-[transform,border-radius] duration-200 data-[active]:scale-[0.96] data-[active]:rounded-3xl motion-reduce:transition-none">
-          <main className="min-h-svh bg-[color-mix(in_srgb,var(--color-blue-50)_20%,var(--color-background-full))] text-[var(--color-text-primary)]">
-            <div className="bg-[color-mix(in_srgb,var(--color-blue-50)_20%,var(--color-background-full))]">
+          <main className="min-h-svh bg-[var(--color-background-full)] text-[var(--color-text-primary)]">
+            <div className="bg-[var(--color-background-full)]">
               <header className="mx-auto flex min-h-16 w-[calc(100%-3rem)] max-w-[1200px] items-center justify-between sm:min-h-[76px] max-sm:w-[calc(100%-2rem)]">
                 <Link className="text-title-2-semibold flex items-center gap-2 text-[var(--color-text-primary)] no-underline" to="/dashboard">
                   <img
@@ -101,47 +84,38 @@ function DashboardLayout() {
               </header>
             </div>
 
-            <Tabs.Root
-              className="hidden w-full bg-[color-mix(in_srgb,var(--color-blue-50)_20%,var(--color-background-full))] sm:block"
-              value={activeTab ?? null}
+            <Tabs
+              aria-label="Dashboard sections"
+              className="hidden w-full gap-0 bg-[var(--color-background-full)] sm:flex"
+              onSelectionChange={(value) => {
+                const selectedTab = dashboardTabs.find((tab) => tab.value === value);
+                if (selectedTab) navigate(selectedTab.path);
+              }}
+              {...tabSelectionProps}
             >
-              <div className="bg-[var(--color-accent-600)]">
-                <Tabs.List
-                  aria-label="Dashboard sections"
-                  className="relative mx-auto flex w-[calc(100%-3rem)] max-w-[1200px] gap-7 overflow-x-auto border-b border-[var(--color-accent-500)]"
-                >
-                  {dashboardTabs.map((tab) => (
-                    <Tabs.Tab
-                      key={tab.value}
-                      className={({ active }) =>
-                        `text-headline-medium flex cursor-pointer items-center gap-2 border-0 bg-transparent px-3 py-3.5 focus-visible:rounded focus-visible:outline-2 focus-visible:outline-[var(--color-border-focus-ring)] focus-visible:outline-offset-3 ${
-                          active
-                            ? "rounded-t-md bg-[var(--color-accent-800)] text-[var(--color-text-white)]"
-                            : "text-[var(--color-accent-100)] hover:text-[var(--color-text-white)]"
-                        }`
-                      }
-                      nativeButton={false}
-                      render={<RouterTabLink to={tab.path} />}
-                      value={tab.value}
-                    >
-                      <HugeiconsIcon
-                        aria-hidden="true"
-                        icon={tab.icon}
-                        size={18}
-                        strokeWidth={1.75}
-                      />
-                      {tab.label}
-                    </Tabs.Tab>
-                  ))}
-                  {activeTab && (
-                    <Tabs.Indicator className="absolute bottom-0 left-[var(--active-tab-left)] h-1 w-[var(--active-tab-width)] rounded-t-sm bg-[var(--color-accent-100)] transition-[left,width] duration-200 ease-out" />
-                  )}
-                </Tabs.List>
-              </div>
+              <TabList className="mx-auto w-[calc(100%-3rem)] max-w-[1200px] gap-2 overflow-x-auto max-xl:gap-1">
+                {dashboardTabs.map((tab) => (
+                  <Tab
+                    className="[&>span:first-child]:!text-headline-medium [&>span:first-child>svg]:!size-[18px]"
+                    id={tab.value}
+                    key={tab.value}
+                  >
+                    <HugeiconsIcon
+                      aria-hidden="true"
+                      className="size-4 shrink-0"
+                      icon={tab.icon}
+                      strokeWidth={1.75}
+                    />
+                    <span>{tab.label}</span>
+                  </Tab>
+                ))}
+              </TabList>
+              {dashboardTabs.map((tab) => (
+                <TabPanel className="hidden" id={tab.value} key={tab.value} />
+              ))}
+            </Tabs>
 
-            </Tabs.Root>
-
-            <div className="w-full bg-[color-mix(in_srgb,var(--color-blue-50)_20%,var(--color-background-full))]">
+            <div className="w-full bg-[var(--color-background-full)]">
               <div className="mx-auto w-[calc(100%-2rem)] max-w-[1200px] py-4 sm:w-[calc(100%-3rem)] sm:px-6 sm:py-8">
                 <Outlet />
               </div>

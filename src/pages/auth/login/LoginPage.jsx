@@ -87,7 +87,7 @@ function LoginPage() {
   };
 
   return (
-    <main className="grid min-h-svh place-items-center bg-[color-mix(in_srgb,var(--color-blue-50)_20%,var(--color-background-full))] px-4 py-10">
+    <main className="grid min-h-svh place-items-center bg-[var(--color-background-full)] px-4 py-10">
       <section className="w-full max-w-md px-2 py-6 sm:px-4 sm:py-8">
         <Link
           className="text-title-2-semibold flex items-center justify-center gap-2 text-[var(--color-text-primary)] no-underline"

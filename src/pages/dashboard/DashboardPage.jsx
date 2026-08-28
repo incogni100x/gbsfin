@@ -28,6 +28,15 @@ function formatBalance(balance, currency) {
   }).format(balance);
 }
 
+function formatAccountLabel(name) {
+  const normalizedName = name === "Offshire" ? "Offshore" : name;
+
+  if (!normalizedName) return "Account";
+  return /\baccount$/i.test(normalizedName)
+    ? normalizedName
+    : `${normalizedName} Account`;
+}
+
 function AccountCardSkeleton() {
   return (
     <LayerCard
@@ -51,7 +60,7 @@ function AccountCardSkeleton() {
 function AccountNotice({ children, icon, title }) {
   return (
     <article className="flex items-start gap-3 rounded-[var(--radius-2lg)] border border-[color-mix(in_srgb,var(--color-separator-border)_65%,transparent)] p-4 sm:p-5">
-      <span className="grid size-10 shrink-0 place-items-center rounded-[var(--radius-lg)] bg-[color-mix(in_srgb,var(--color-accent-100)_55%,transparent)] text-[var(--color-accent-600)]">
+      <span className="grid size-10 shrink-0 place-items-center text-[var(--color-accent-600)]">
         <HugeiconsIcon
           aria-hidden="true"
           icon={icon}
@@ -128,7 +137,9 @@ function DashboardPage() {
                   size={20}
                   strokeWidth={1.75}
                 />
-                <span className="text-headline-medium">{account.name}</span>
+                <span className="text-headline-medium">
+                  {formatAccountLabel(account.name)}
+                </span>
               </LayerCard.Secondary>
 
               <LayerCard.Primary
@@ -145,6 +156,20 @@ function DashboardPage() {
           ))}
         </div>
       )}
+
+      <section aria-labelledby="quick-links-heading" className="mt-6">
+        <h2 className="text-title-3-medium sm:text-title-2-medium" id="quick-links-heading">
+          Quick links
+        </h2>
+        <div className="mt-3">
+          <Link
+            className="text-body-medium inline-flex min-h-9 items-center rounded-2lg border border-[var(--color-border-button-default)] px-3 text-[var(--color-text-primary)] no-underline transition-colors hover:bg-[var(--color-background-primary-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus-ring)]"
+            to="/manage-accounts"
+          >
+            Manage accounts
+          </Link>
+        </div>
+      </section>
 
       <section className="mt-8">
         <div className="mb-4 flex items-center justify-between gap-4">

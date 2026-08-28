@@ -25,8 +25,17 @@ const statusClassNames = {
 };
 
 function formatAmount(transaction) {
+  const currencyCode = transaction.currency_code || "USD";
+
+  if (currencyCode === "USDC" || currencyCode === "USDT") {
+    return `${currencyCode} ${new Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 2,
+    }).format(transaction.amount)}`;
+  }
+
   return new Intl.NumberFormat("en-US", {
-    currency: transaction.currency_code || "USD",
+    currency: currencyCode,
     maximumFractionDigits: 2,
     minimumFractionDigits: 2,
     style: "currency",

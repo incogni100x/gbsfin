@@ -1,4 +1,5 @@
 import { isSupabaseConfigured } from "@/lib/supabase/client.js";
+import FullScreenLoader from "@/components/ui/FullScreenLoader.jsx";
 import { Navigate, useLocation } from "react-router";
 import { useAuth } from "./useAuth.js";
 
@@ -20,13 +21,7 @@ function RequireAuth({ children }) {
   }
 
   if (loading) {
-    return (
-      <main className="grid min-h-svh place-items-center">
-        <p className="text-body-medium text-[var(--color-text-secondary)]">
-          Loading your account…
-        </p>
-      </main>
-    );
+    return <FullScreenLoader />;
   }
 
   if (!session || !sessionVerified) {

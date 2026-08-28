@@ -245,7 +245,7 @@ export default function LoansPage() {
               <Input
                 label="Requested amount"
                 leadingAddon={
-                  <span className="pl-1 text-[var(--color-text-secondary)]">
+                  <span className="pl-1 text-[var(--color-text-primary)]">
                     $
                   </span>
                 }

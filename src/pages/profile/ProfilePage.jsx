@@ -86,8 +86,8 @@ function ProfilePage() {
     event.preventDefault();
     setPasswordError("");
     setPasswordStatus("");
-    if (newPassword.length < 10) {
-      setPasswordError("Use at least 10 characters for your new password.");
+    if (newPassword.length < 8) {
+      setPasswordError("Use at least 8 characters for your new password.");
       return;
     }
     if (newPassword !== confirmPassword) {

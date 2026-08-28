@@ -231,7 +231,7 @@ function CurrencyTransferPopover({ availableCurrencies, currency }) {
                 className="mt-5"
                 label="Amount"
                 leadingAddon={
-                  <span className="text-body-medium shrink-0 pl-1 text-[var(--color-text-secondary)]">
+                  <span className="text-body-medium shrink-0 pl-1 text-[var(--color-text-primary)]">
                     {currency.symbol}
                   </span>
                 }

@@ -33,7 +33,7 @@ function MarketingLayout() {
   return (
     <div className="flex min-h-svh flex-col bg-[var(--color-background-full)] text-[var(--color-text-primary)]">
       <ScrollToMarketingHash />
-      <header className="bg-[var(--color-background-primary-default)]">
+      <header className="bg-[var(--color-background-full)]">
         <div className="mx-auto flex min-h-16 w-[calc(100%-2rem)] max-w-[1200px] items-center justify-between gap-6 sm:w-[calc(100%-3rem)]">
           <Link
             className="text-title-3-semibold flex shrink-0 items-center gap-2 no-underline"

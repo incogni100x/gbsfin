@@ -25,7 +25,7 @@ const footerGroups = [
 
 function MarketingFooter() {
   return (
-    <footer className="bg-[var(--color-background-primary-default)] px-4 py-10 sm:px-6 sm:py-12">
+    <footer className="bg-[var(--color-background-full)] px-4 py-10 sm:px-6 sm:py-12">
       <div className="mx-auto max-w-[1200px]">
         <div className="md:flex md:justify-between md:gap-12">
           <div className="mb-8 md:mb-0">

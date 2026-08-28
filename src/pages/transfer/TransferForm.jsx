@@ -177,7 +177,7 @@ function TransferForm() {
               <Input
                 label="Amount"
                 leadingAddon={
-                  <span className="text-body-medium shrink-0 pl-1 text-[var(--color-text-secondary)]">
+                  <span className="text-body-medium shrink-0 pl-1 text-[var(--color-text-primary)]">
                     {sourceCurrency.symbol}
                   </span>
                 }

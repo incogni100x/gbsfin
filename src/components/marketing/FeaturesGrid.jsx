@@ -73,7 +73,7 @@ function FeaturesGrid() {
             className="relative min-h-0 rounded-xl bg-background-primary-default p-5 shadow-none sm:min-h-60 sm:p-6"
             key={feature.title}
           >
-            <span className="inline-flex rounded-lg bg-[color-mix(in_srgb,var(--color-accent-100)_60%,transparent)] p-3 text-[var(--color-accent-600)] ring-2 ring-inset ring-[color-mix(in_srgb,var(--color-accent-600)_25%,transparent)]">
+            <span className="inline-flex p-3 text-[var(--color-accent-600)]">
               <HugeiconsIcon
                 aria-hidden="true"
                 icon={feature.icon}

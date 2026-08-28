@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router";
 function NotFoundPage() {
   const navigate = useNavigate();
   return (
-    <main className="grid min-h-svh place-items-center bg-[color-mix(in_srgb,var(--color-blue-50)_20%,var(--color-background-full))] px-4 py-10 text-center">
+    <main className="grid min-h-svh place-items-center bg-[var(--color-background-full)] px-4 py-10 text-center">
       <section className="w-full max-w-lg">
         <Link
           className="text-title-2-semibold inline-flex items-center gap-2 text-[var(--color-text-primary)] no-underline"

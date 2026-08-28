@@ -22,7 +22,7 @@ function MobileMarketingMenu({ navigationItems }) {
       <Drawer.Portal>
         <Drawer.Backdrop className="fixed inset-0 z-40 bg-[color-mix(in_srgb,var(--color-text-primary)_28%,transparent)] transition-opacity duration-200 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0 motion-reduce:transition-none" />
         <Drawer.Viewport className="fixed inset-0 z-50 flex items-end">
-          <Drawer.Popup className="w-full rounded-t-3xl bg-[var(--color-background-primary-default)] shadow-2xl outline-none transition-transform duration-200 data-[ending-style]:translate-y-full data-[starting-style]:translate-y-full motion-reduce:transition-none">
+          <Drawer.Popup className="w-full rounded-t-3xl bg-[var(--color-background-full)] shadow-2xl outline-none transition-transform duration-200 data-[ending-style]:translate-y-full data-[starting-style]:translate-y-full motion-reduce:transition-none">
             <Drawer.Content className="p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
               <Drawer.Title className="sr-only">Marketing navigation</Drawer.Title>
               <span

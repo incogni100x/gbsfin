@@ -83,7 +83,7 @@ function ForgotPasswordPage() {
 
   if (complete) {
     return (
-      <main className="grid min-h-svh place-items-center bg-[color-mix(in_srgb,var(--color-blue-50)_20%,var(--color-background-full))] px-4 py-10">
+      <main className="grid min-h-svh place-items-center bg-[var(--color-background-full)] px-4 py-10">
         <SuccessState
           action={
             <Button onClick={() => navigate("/login", { replace: true })}>
@@ -112,7 +112,7 @@ function ForgotPasswordPage() {
   };
 
   return (
-    <main className="grid min-h-svh place-items-center bg-[color-mix(in_srgb,var(--color-blue-50)_20%,var(--color-background-full))] px-4 py-10">
+    <main className="grid min-h-svh place-items-center bg-[var(--color-background-full)] px-4 py-10">
       <section className="w-full max-w-md px-2 py-6 sm:px-4 sm:py-8">
         <Link
           className="text-title-2-semibold flex items-center justify-center gap-2 text-[var(--color-text-primary)] no-underline"
@@ -189,7 +189,7 @@ function ForgotPasswordPage() {
             <>
               <Input
                 autoComplete="new-password"
-                hint="Use at least 10 characters with uppercase, lowercase, and numbers."
+                hint="Use at least 8 characters."
                 label="New password"
                 onChange={setPassword}
                 placeholder="Enter a new password"
@@ -234,7 +234,7 @@ function ForgotPasswordPage() {
                 (currentStep === 1 && otp.length !== 6) ||
                 (currentStep === 2 && !answer.trim()) ||
                 (currentStep === 3 &&
-                  (password.length < 10 || !confirmPassword))
+                  (password.length < 8 || !confirmPassword))
               }
               type="submit"
             >

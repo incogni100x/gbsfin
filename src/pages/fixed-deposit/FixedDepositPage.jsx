@@ -275,7 +275,7 @@ export default function FixedDepositPage() {
               <Input
                 label="Deposit amount"
                 leadingAddon={
-                  <span className="pl-1 text-[var(--color-text-secondary)]">
+                  <span className="pl-1 text-[var(--color-text-primary)]">
                     $
                   </span>
                 }
