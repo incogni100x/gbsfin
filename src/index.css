@@ -37,12 +37,18 @@ p,
 table,
 .financial-number {
   font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "calt" 1;
+  font-feature-settings:
+    "tnum" 1,
+    "calt" 1;
 }
 
 .account-number {
   font-variant-numeric: tabular-nums slashed-zero;
-  font-feature-settings: "tnum" 1, "zero" 1, "ss02" 1, "calt" 1;
+  font-feature-settings:
+    "tnum" 1,
+    "zero" 1,
+    "ss02" 1,
+    "calt" 1;
 }
 
 /* Kumo positions the popup inside a transformed wrapper. Raise that wrapper

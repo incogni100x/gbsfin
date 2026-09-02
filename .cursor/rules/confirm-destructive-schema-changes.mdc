@@ -1,0 +1,11 @@
+---
+description: Require explicit approval before destructive database schema changes
+alwaysApply: true
+---
+
+# Destructive schema changes
+
+- Always ask for explicit user approval immediately before dropping any database column.
+- Before requesting approval, identify dependencies and explain what data will be removed.
+- Provide a tested backup or rollback path when practical.
+- Never use `CASCADE` unless the user explicitly approves the resolved dependent objects.

@@ -1,5 +1,6 @@
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
+import { Radio, RadioGroup } from "@/components/base/radio/radio";
 import {
   Dialog,
   DialogContent,
@@ -20,15 +21,12 @@ import {
 } from "./linkedAccountsService.js";
 
 const emptyAccount = {
+  account_type: "personal",
   account_name: "",
-  account_holder_name: "",
   account_number: "",
+  confirm_account_number: "",
   bank_name: "",
-  country_code: "US",
-  currency_code: "USD",
-  iban: "",
   routing_number: "",
-  swift_code: "",
 };
 const mask = (value) => `•••• ${value.slice(-4)}`;
 
@@ -61,11 +59,22 @@ function LinkedAccountsPage() {
   });
   const openForm = (account = null) => {
     setEditing(account);
-    setForm(account ? { ...account } : emptyAccount);
+    setForm(
+      account
+        ? {
+            ...emptyAccount,
+            ...account,
+            confirm_account_number: account.account_number,
+          }
+        : emptyAccount,
+    );
     setIsDialogOpen(true);
   };
   const update = (key, value) =>
     setForm((current) => ({ ...current, [key]: value }));
+  const accountNumbersMatch =
+    Boolean(form.account_number.trim()) &&
+    form.account_number.trim() === form.confirm_account_number.trim();
 
   return (
     <section>
@@ -94,7 +103,7 @@ function LinkedAccountsPage() {
                 {account.bank_name} · {mask(account.account_number)}
               </p>
               <p className="text-body-2-medium mt-1 text-[var(--color-text-secondary)]">
-                {account.account_holder_name} · {account.currency_code}
+                {account.account_type === "business" ? "Business" : "Personal"} account
               </p>
               <div className="mt-4 flex gap-2">
                 <Button
@@ -146,33 +155,45 @@ function LinkedAccountsPage() {
             onSubmit={(event) => {
               event.preventDefault();
               save.mutate({
-                ...form,
                 id: editing?.id,
+                account_type: form.account_type,
                 account_name: form.account_name.trim(),
-                account_holder_name: form.account_holder_name.trim(),
                 account_number: form.account_number.trim(),
                 bank_name: form.bank_name.trim(),
-                country_code: form.country_code.trim().toUpperCase(),
-                currency_code: form.currency_code.trim().toUpperCase(),
-                iban: form.iban.trim() || null,
                 routing_number: form.routing_number.trim() || null,
-                swift_code: form.swift_code.trim() || null,
               });
             }}
           >
+            <fieldset className="sm:col-span-2">
+              <legend className="text-body-medium text-[var(--color-text-primary)]">
+                Account type
+              </legend>
+              <RadioGroup
+                aria-label="Account type"
+                className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2"
+                onChange={(value) => update("account_type", value)}
+                value={form.account_type}
+              >
+                <Radio
+                  className="min-h-11 rounded-[var(--radius-2lg)] border border-[var(--color-separator-border)] p-3 data-[selected]:border-[var(--color-accent-500)]"
+                  value="personal"
+                >
+                  Personal
+                </Radio>
+                <Radio
+                  className="min-h-11 rounded-[var(--radius-2lg)] border border-[var(--color-separator-border)] p-3 data-[selected]:border-[var(--color-accent-500)]"
+                  value="business"
+                >
+                  Business
+                </Radio>
+              </RadioGroup>
+            </fieldset>
             <Input
-              label="Account label"
+              label="Account name"
               onChange={(value) => update("account_name", value)}
-              placeholder="e.g. Personal checking"
+              placeholder="e.g. Main checking"
               required
               value={form.account_name}
-            />
-            <Input
-              label="Account holder"
-              onChange={(value) => update("account_holder_name", value)}
-              placeholder="Full name"
-              required
-              value={form.account_holder_name}
             />
             <Input
               label="Bank name"
@@ -183,26 +204,35 @@ function LinkedAccountsPage() {
             />
             <Input
               label="Account number"
+              inputMode="numeric"
               onChange={(value) => update("account_number", value)}
               placeholder="Account number"
               required
               value={form.account_number}
             />
             <Input
-              label="Routing number (optional)"
-              onChange={(value) => update("routing_number", value)}
-              value={form.routing_number || ""}
-            />
-            <Input
-              label="IBAN (optional)"
-              onChange={(value) => update("iban", value)}
-              value={form.iban || ""}
+              hint={
+                form.confirm_account_number && !accountNumbersMatch
+                  ? "Account numbers do not match."
+                  : undefined
+              }
+              inputMode="numeric"
+              isInvalid={Boolean(
+                form.confirm_account_number && !accountNumbersMatch,
+              )}
+              label="Confirm account number"
+              onChange={(value) => update("confirm_account_number", value)}
+              placeholder="Re-enter account number"
+              required
+              value={form.confirm_account_number}
             />
             <Input
               className="sm:col-span-2"
-              label="SWIFT / BIC (optional)"
-              onChange={(value) => update("swift_code", value)}
-              value={form.swift_code || ""}
+              label="Routing number (optional)"
+              inputMode="numeric"
+              onChange={(value) => update("routing_number", value)}
+              placeholder="Routing number"
+              value={form.routing_number || ""}
             />
           </form>
           <DialogFooter>
@@ -216,7 +246,7 @@ function LinkedAccountsPage() {
               Cancel
             </Button>
             <Button
-              disabled={save.isPending}
+              disabled={save.isPending || !accountNumbersMatch}
               form="linked-account-form"
               type="submit"
             >

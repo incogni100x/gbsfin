@@ -1,7 +1,7 @@
 import { requireSupabase } from "@/lib/supabase/client.js";
 
 const fields =
-  "id, account_name, account_holder_name, bank_name, account_number, routing_number, iban, swift_code, country_code, currency_code, created_at";
+  "id, account_type, account_name, bank_name, account_number, routing_number, created_at";
 
 function throwIfError(error) {
   if (error) throw error;
@@ -23,10 +23,18 @@ export async function getLinkedAccounts() {
 
 export async function saveLinkedAccount({ id, ...account }) {
   const client = requireSupabase();
+  const record = {
+    account_name: account.account_name,
+    account_number: account.account_number,
+    account_type: account.account_type,
+    bank_name: account.bank_name,
+    routing_number: account.routing_number,
+  };
+
   if (id) {
     const { data, error } = await client
       .from("linked_bank_accounts")
-      .update(account)
+      .update(record)
       .eq("id", id)
       .select(fields)
       .single();
@@ -42,7 +50,10 @@ export async function saveLinkedAccount({ id, ...account }) {
   if (!user) throw new Error("Your session has expired. Please sign in again.");
   const { data, error } = await client
     .from("linked_bank_accounts")
-    .insert({ ...account, user_id: user.id })
+    .insert({
+      ...record,
+      user_id: user.id,
+    })
     .select(fields)
     .single();
   throwIfError(error);
