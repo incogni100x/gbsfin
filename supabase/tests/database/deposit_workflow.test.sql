@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(26);
+select plan(35);
 
 select has_type('public', 'request_status', 'request status enum exists');
 select has_table('public', 'currencies', 'currencies exists');
@@ -17,6 +17,34 @@ select has_table(
   'currency_access_requests',
   'currency access requests exists'
 );
+select has_column(
+  'public',
+  'currency_access_requests',
+  'application_reference',
+  'currency requests expose a support-safe application reference'
+);
+select col_not_null(
+  'public',
+  'currency_access_requests',
+  'application_reference',
+  'every currency request has an application reference'
+);
+select has_trigger(
+  'public',
+  'currency_access_requests',
+  'currency_access_requests_set_application_reference',
+  'new currency requests receive an application reference'
+);
+select ok(
+  exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.currency_access_requests'::regclass
+      and conname = 'currency_access_requests_application_reference_key'
+      and contype = 'u'
+  ),
+  'currency application references are unique'
+);
 select has_table(
   'public',
   'deposit_instructions',
@@ -24,8 +52,33 @@ select has_table(
 );
 select has_table(
   'public',
-  'deposit_confirmations',
-  'deposit confirmations exists'
+  'currency_deposits',
+  'currency deposits exists'
+);
+
+select has_column(
+  'public',
+  'currency_deposits',
+  'created_at',
+  'currency deposits retain one frontend transaction date'
+);
+select hasnt_column(
+  'public',
+  'currency_deposits',
+  'reviewed_at',
+  'currency deposits do not duplicate the review date'
+);
+select hasnt_column(
+  'public',
+  'currency_deposits',
+  'credited_at',
+  'currency deposits do not duplicate the credit date'
+);
+select hasnt_column(
+  'public',
+  'currency_deposits',
+  'updated_at',
+  'currency deposits do not store an unused update date'
 );
 
 select hasnt_column(
@@ -146,11 +199,21 @@ select ok(
 );
 select ok(
   (
+    select position('USDC' in qual) > 0 and position('USDT' in qual) > 0
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'deposit_instructions'
+      and policyname = 'deposit_instructions_approved_currency_read'
+  ),
+  'verified users can read active USDC and USDT payment instructions'
+);
+select ok(
+  (
     select relrowsecurity
     from pg_class
-    where oid = 'public.deposit_confirmations'::regclass
+    where oid = 'public.currency_deposits'::regclass
   ),
-  'deposit confirmations has RLS enabled'
+  'currency deposits has RLS enabled'
 );
 
 select has_function(

@@ -26,7 +26,7 @@ function DepositHistoryTable({ deposits }) {
       size="md"
     >
       <TableHeader>
-        <TableColumn isRowHeader>Currency</TableColumn>
+        <TableColumn isRowHeader>Account</TableColumn>
         <TableColumn>Method</TableColumn>
         <TableColumn>Submitted</TableColumn>
         <TableColumn>Amount</TableColumn>
@@ -42,20 +42,27 @@ function DepositHistoryTable({ deposits }) {
       >
         {(deposit) => (
           <TableRow id={deposit.id}>
-            <TableCell>{deposit.currency_code}</TableCell>
             <TableCell>
-              {deposit.deposit_instructions?.payment_rail ?? "Deposit"}
+              <span className="grid">
+                <span>{deposit.accountName}</span>
+                {deposit.accountNumber && (
+                  <span className="text-body-2-regular text-[var(--color-text-secondary)]">
+                    •••• {deposit.accountNumber.slice(-4)}
+                  </span>
+                )}
+              </span>
             </TableCell>
+            <TableCell>{deposit.method}</TableCell>
             <TableCell>
               {new Intl.DateTimeFormat("en", {
                 dateStyle: "medium",
-              }).format(new Date(deposit.created_at))}
+              }).format(new Date(deposit.createdAt))}
             </TableCell>
             <TableCell className="whitespace-nowrap">
               {Number(deposit.amount).toLocaleString("en", {
                 maximumFractionDigits: 6,
               })}{" "}
-              {deposit.currency_code}
+              {deposit.currency}
             </TableCell>
             <TableCell>
               <Badge className={statusClassNames[deposit.status]}>

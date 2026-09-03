@@ -4,14 +4,13 @@ import { Input } from "@/components/base/input/input";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { depositOverviewQueryKey } from "@/pages/deposit/depositService.js";
-import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
-  currencyWithdrawalsQueryKey,
-  requestCurrencyWithdrawal,
+  currencyTransfersQueryKey,
+  requestCurrencyTransfer,
 } from "./currencyTransferService.js";
+import TransferConfirmation from "./TransferConfirmation.jsx";
 
 const emptyDetails = {
   accountHolderName: "",
@@ -80,7 +79,7 @@ function Detail({ label, value }) {
   );
 }
 
-function WithdrawalDialog({ currency }) {
+function CurrencyTransferDialog({ currency }) {
   const { profile, user } = useAuth();
   const queryClient = useQueryClient();
   const isStablecoin = currency.currency_kind === "stablecoin";
@@ -94,7 +93,7 @@ function WithdrawalDialog({ currency }) {
   const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState("form");
-  const mutation = useMutation({ mutationFn: requestCurrencyWithdrawal });
+  const mutation = useMutation({ mutationFn: requestCurrencyTransfer });
   const amountValue = Number.parseFloat(amount);
   const commonComplete = isStablecoin
     ? true
@@ -128,12 +127,12 @@ function WithdrawalDialog({ currency }) {
     setDetails(createInitialDetails(currency, profile));
   };
 
-  const submitWithdrawal = async () => {
+  const submitTransfer = async () => {
     setError("");
     setStep("processing");
 
     try {
-      const withdrawal = await mutation.mutateAsync({
+      const transfer = await mutation.mutateAsync({
         amount,
         currencyCode: currency.code,
         details,
@@ -144,7 +143,7 @@ function WithdrawalDialog({ currency }) {
         (currentCurrencies = []) =>
           currentCurrencies.map((item) =>
             item.code === currency.code
-              ? { ...item, balance: item.balance - withdrawal.amount }
+              ? { ...item, balance: item.balance - transfer.amount }
               : item,
           ),
       );
@@ -152,14 +151,14 @@ function WithdrawalDialog({ currency }) {
         queryKey: depositOverviewQueryKey(user.id),
       });
       void queryClient.invalidateQueries({
-        queryKey: currencyWithdrawalsQueryKey(user.id),
+        queryKey: currencyTransfersQueryKey(user.id),
       });
       void queryClient.invalidateQueries({
         queryKey: ["transactions", user.id],
       });
       setStep("submitted");
     } catch (submissionError) {
-      setError(submissionError.message || "Unable to submit this withdrawal.");
+      setError(submissionError.message || "Unable to submit this transfer.");
       setStep("review");
     }
   };
@@ -167,7 +166,7 @@ function WithdrawalDialog({ currency }) {
   return (
     <>
       <Button onClick={() => setOpen(true)} size="small">
-        Withdraw
+        Transfer
       </Button>
       <Dialog
         onOpenChange={(nextOpen) => {
@@ -178,10 +177,9 @@ function WithdrawalDialog({ currency }) {
         <DialogContent aria-describedby={undefined} className="sm:max-w-xl">
           {step === "form" && (
             <div>
-              <DialogTitle>Withdraw {currency.code}</DialogTitle>
+              <DialogTitle>Transfer {currency.code}</DialogTitle>
               <p className="text-body-2-medium mt-2 text-[var(--color-text-secondary)]">
-                Enter the destination details for your {currency.name}{" "}
-                withdrawal.
+                Enter the destination details for your {currency.name} transfer.
               </p>
 
               <div className="mt-5 grid max-h-[62vh] gap-4 overflow-y-auto pr-1 sm:grid-cols-2">
@@ -281,14 +279,14 @@ function WithdrawalDialog({ currency }) {
                 disabled={!canReview}
                 onClick={() => setStep("review")}
               >
-                Review withdrawal
+                Review transfer
               </Button>
             </div>
           )}
 
           {step === "review" && (
             <div>
-              <DialogTitle>Review withdrawal</DialogTitle>
+              <DialogTitle>Review transfer</DialogTitle>
               <div className="mt-4 rounded-[var(--radius-2lg)] bg-[var(--color-background-secondary-default)] p-4">
                 <dl className="financial-number text-body-2-medium grid gap-3">
                   <Detail
@@ -326,11 +324,8 @@ function WithdrawalDialog({ currency }) {
                 <Button onClick={() => setStep("form")} variant="secondary">
                   Back
                 </Button>
-                <Button
-                  disabled={mutation.isPending}
-                  onClick={submitWithdrawal}
-                >
-                  Submit withdrawal
+                <Button disabled={mutation.isPending} onClick={submitTransfer}>
+                  Submit transfer
                 </Button>
               </div>
             </div>
@@ -339,7 +334,7 @@ function WithdrawalDialog({ currency }) {
           {step === "processing" && (
             <div className="py-5 text-center">
               <Spinner className="mx-auto size-6 text-[var(--color-accent-600)]" />
-              <DialogTitle className="mt-4">Submitting withdrawal</DialogTitle>
+              <DialogTitle className="mt-4">Submitting transfer</DialogTitle>
               <p className="text-body-2-medium mt-2 text-[var(--color-text-secondary)]">
                 Please wait while we securely reserve the funds.
               </p>
@@ -347,23 +342,20 @@ function WithdrawalDialog({ currency }) {
           )}
 
           {step === "submitted" && (
-            <div className="py-3 text-center">
-              <HugeiconsIcon
-                aria-hidden="true"
-                className="mx-auto text-[var(--color-accent-600)]"
-                icon={CheckmarkCircle02Icon}
-                size={40}
-                strokeWidth={1.75}
-              />
-              <DialogTitle className="mt-3">Withdrawal submitted</DialogTitle>
-              <p className="text-body-2-medium mt-2 text-[var(--color-text-secondary)]">
-                Your request is pending review. Rejected requests are
-                automatically returned to your balance.
-              </p>
-              <Button className="mt-5" onClick={closeDialog}>
-                Done
-              </Button>
-            </div>
+            <TransferConfirmation
+              description="Your currency transfer was submitted and is awaiting review."
+              details={[
+                { label: "Transfer amount", value: `${currency.symbol} ${Number(amount).toLocaleString("en", { maximumFractionDigits: 6 })} ${currency.code}`, emphasis: true },
+                { label: isStablecoin ? "Wallet" : "Recipient", value: isStablecoin ? details.walletAddress : details.accountHolderName },
+                { label: isStablecoin ? "Network" : "Bank", value: isStablecoin ? details.network : details.bankName },
+                { label: "Status", value: "Pending review" },
+              ]}
+              note="We’ll notify you when the transfer has been reviewed. Rejected requests are automatically returned to your balance."
+              onDone={closeDialog}
+              summary="The amount has been reserved from your currency balance while the transfer is reviewed."
+              summaryTitle="Transfer review"
+              title="Transfer submitted"
+            />
           )}
         </DialogContent>
       </Dialog>
@@ -371,4 +363,4 @@ function WithdrawalDialog({ currency }) {
   );
 }
 
-export default WithdrawalDialog;
+export default CurrencyTransferDialog;

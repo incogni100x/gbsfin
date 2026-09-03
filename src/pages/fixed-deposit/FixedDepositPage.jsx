@@ -60,7 +60,9 @@ function StatCard({ detail, label, value }) {
         <span className="text-body-medium">{label}</span>
       </LayerCard.Secondary>
       <LayerCard.Primary className="!bg-[var(--color-accent-600)] px-4 py-3 text-[var(--color-neutral-50)] ring-[var(--color-separator-border)]">
-        <strong className="financial-number text-title-1-medium">{value}</strong>
+        <strong className="financial-number text-title-1-medium">
+          {value}
+        </strong>
         <span className="text-body-2-medium text-[var(--color-neutral-50)]">
           {detail}
         </span>
@@ -164,16 +166,18 @@ export default function FixedDepositPage() {
     queryFn: getCurrentUserAccounts,
     staleTime: 30000,
   });
-  const { data: deposits = [], error, isPending: depositsPending } = useQuery({
+  const {
+    data: deposits = [],
+    error,
+    isPending: depositsPending,
+  } = useQuery({
     enabled: !!user?.id,
     queryKey: fixedDepositKeys.all(user?.id),
     queryFn: () => getFixedDeposits(user.id),
     refetchInterval: 30000,
     staleTime: 15000,
   });
-  const selectedRate = rates.find(
-    (rate) => String(rate.id) === String(rateId),
-  );
+  const selectedRate = rates.find((rate) => String(rate.id) === String(rateId));
   const principal = Number(amount) || 0;
   const interest = selectedRate
     ? ((principal * selectedRate.monthly_rate) / 100) *
@@ -341,31 +345,31 @@ export default function FixedDepositPage() {
             <div className="grid gap-3 rounded-[var(--radius-2lg)] bg-[var(--color-background-secondary-default)] p-4">
               <h3 className="text-headline-medium">Expected returns</h3>
               <div className="grid gap-3 sm:grid-cols-3">
-              <span>
-                Principal Amount
-                <br />
-                <span className="financial-number text-title-3-medium">{money(principal)}</span>
-              </span>
-              <span>
-                Interest Earned
-                <br />
-                <span className="financial-number text-title-3-medium">{money(interest)}</span>
-              </span>
-              <span>
-                Maturity Amount
-                <br />
-                <span className="financial-number text-title-3-medium">
-                  {money(principal + interest)}
+                <span>
+                  Principal Amount
+                  <br />
+                  <span className="financial-number text-title-3-medium">
+                    {money(principal)}
+                  </span>
                 </span>
-              </span>
+                <span>
+                  Interest Earned
+                  <br />
+                  <span className="financial-number text-title-3-medium">
+                    {money(interest)}
+                  </span>
+                </span>
+                <span>
+                  Maturity Amount
+                  <br />
+                  <span className="financial-number text-title-3-medium">
+                    {money(principal + interest)}
+                  </span>
+                </span>
               </div>
             </div>
             <FeedbackMessage tone="error">{message}</FeedbackMessage>
-            <Button
-              className="w-fit"
-              disabled={create.isPending}
-              type="submit"
-            >
+            <Button className="w-fit" disabled={create.isPending} type="submit">
               {create.isPending ? "Opening…" : "Open fixed deposit"}
             </Button>
           </form>
@@ -395,14 +399,27 @@ export default function FixedDepositPage() {
               Confirm fixed deposit
             </DialogTitle>
             <DialogDescription>
-              Review the funding account, term, and expected return before opening this deposit.
+              Review the funding account, term, and expected return before
+              opening this deposit.
             </DialogDescription>
           </DialogHeader>
           <div className="financial-number grid gap-3 rounded-[var(--radius-lg)] border border-[var(--color-separator-border)] bg-[var(--color-background-secondary-default)] p-4 sm:p-5">
-            <p className="flex justify-between gap-4"><span>Principal</span><span>{money(principal)}</span></p>
-            <p className="flex justify-between gap-4"><span>Term</span><span>{selectedRate?.duration_months} months</span></p>
-            <p className="flex justify-between gap-4"><span>Interest</span><span>{money(interest)}</span></p>
-            <p className="flex justify-between gap-4 border-t border-[var(--color-separator-border)] pt-3 text-headline-medium"><span>Maturity amount</span><span>{money(principal + interest)}</span></p>
+            <p className="flex justify-between gap-4">
+              <span>Principal</span>
+              <span>{money(principal)}</span>
+            </p>
+            <p className="flex justify-between gap-4">
+              <span>Term</span>
+              <span>{selectedRate?.duration_months} months</span>
+            </p>
+            <p className="flex justify-between gap-4">
+              <span>Interest</span>
+              <span>{money(interest)}</span>
+            </p>
+            <p className="flex justify-between gap-4 border-t border-[var(--color-separator-border)] pt-3 text-headline-medium">
+              <span>Maturity amount</span>
+              <span>{money(principal + interest)}</span>
+            </p>
           </div>
           <DialogFooter className="gap-3 [&_button]:w-full sm:[&_button]:w-auto">
             <DialogClose render={<Button variant="secondary">Back</Button>} />
@@ -410,7 +427,8 @@ export default function FixedDepositPage() {
               disabled={create.isPending}
               onClick={() =>
                 create.mutate({
-                  accountId: accountId || accounts.find((a) => a.currency === "USD")?.id,
+                  accountId:
+                    accountId || accounts.find((a) => a.currency === "USD")?.id,
                   amount: principal,
                   rateId: Number(rateId),
                 })
@@ -462,15 +480,21 @@ export default function FixedDepositPage() {
               <h3 className="text-body-medium">Closure Summary</h3>
               <p className="text-body-medium flex items-center justify-between gap-4">
                 <span>Principal Amount</span>
-                <span className="financial-number text-body-medium">{money(closing?.amount)}</span>
+                <span className="financial-number text-body-medium">
+                  {money(closing?.amount)}
+                </span>
               </p>
               <p className="text-body-medium flex items-center justify-between gap-4">
                 <span>Interest Earned</span>
-                <span className="financial-number text-body-medium">{money(closing?.accruedProfit)}</span>
+                <span className="financial-number text-body-medium">
+                  {money(closing?.accruedProfit)}
+                </span>
               </p>
               <p className="text-body-medium flex items-center justify-between gap-4 text-[var(--color-text-error-primary)]">
                 <span>Penalty</span>
-                <span className="financial-number text-body-medium">-{money(penalty)}</span>
+                <span className="financial-number text-body-medium">
+                  -{money(penalty)}
+                </span>
               </p>
               <p className="text-body-medium flex items-center justify-between gap-4 border-t border-[var(--color-separator-border)] pt-3">
                 <span>Estimated payout</span>

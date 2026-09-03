@@ -12,6 +12,14 @@ export function depositInstructionsQueryKey(currencyCode) {
   return ["deposit-instructions", currencyCode];
 }
 
+export function accountDepositOptionsQueryKey(userId) {
+  return ["account-deposit-options", userId];
+}
+
+export function accountDepositHistoryQueryKey(userId) {
+  return ["account-deposit-history", userId];
+}
+
 function throwIfError(error) {
   if (error) throw error;
 }
@@ -29,7 +37,7 @@ export async function getDepositOverview(userId) {
       .eq("user_id", userId),
     client
       .from("currency_access_requests")
-      .select("currency_code, status, review_note")
+      .select("currency_code, status, review_note, application_reference")
       .eq("user_id", userId),
   ]);
 
@@ -80,7 +88,7 @@ export async function getDepositInstructions(currencyCode) {
   return data;
 }
 
-export async function submitDepositConfirmation({
+export async function submitCurrencyDeposit({
   amount,
   currencyCode,
   instructionId,
@@ -96,7 +104,7 @@ export async function submitDepositConfirmation({
   if (!user) throw new Error("Your session has expired. Please sign in again.");
 
   const { data, error } = await client
-    .from("deposit_confirmations")
+    .from("currency_deposits")
     .insert({
       amount: Number(amount),
       currency_code: currencyCode,
@@ -111,15 +119,139 @@ export async function submitDepositConfirmation({
   return data;
 }
 
+export async function submitStablecoinDepositRequest({
+  accountId,
+  amount,
+  currencyCode,
+  instructionId,
+  senderName,
+}) {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc(
+    "submit_stablecoin_deposit_request",
+    {
+      p_account_id: accountId,
+      p_amount: Number(amount),
+      p_currency_code: currencyCode,
+      p_instruction_id: instructionId,
+      p_sender_name: senderName.trim(),
+    },
+  );
+
+  throwIfError(error);
+  return data;
+}
+
 export async function getDepositHistory(userId) {
   const client = requireSupabase();
   const { data, error } = await client
-    .from("deposit_confirmations")
+    .from("currency_deposits")
     .select(
       "id, amount, currency_code, status, created_at, deposit_instructions ( payment_rail )",
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
+
+  throwIfError(error);
+  return data;
+}
+
+export async function getAccountDepositOptions(userId) {
+  const client = requireSupabase();
+  const [accountsResult, linkedAccountsResult] = await Promise.all([
+    client
+      .from("user_accounts")
+      .select("id, account_number, currency_code, account_types ( name )")
+      .eq("user_id", userId)
+      .order("created_at"),
+    client
+      .from("linked_bank_accounts")
+      .select("id, account_name, bank_name, account_number, routing_number")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false }),
+  ]);
+
+  throwIfError(accountsResult.error);
+  throwIfError(linkedAccountsResult.error);
+
+  return {
+    accounts: accountsResult.data.map((account) => ({
+      accountNumber: account.account_number,
+      currency: account.currency_code,
+      id: account.id,
+      name: account.account_types?.name || "Account",
+    })),
+    linkedAccounts: linkedAccountsResult.data.map((account) => ({
+      accountName: account.account_name,
+      accountNumber: account.account_number,
+      bankName: account.bank_name,
+      id: account.id,
+      routingNumber: account.routing_number,
+    })),
+  };
+}
+
+export async function getAccountDepositHistory(userId) {
+  const client = requireSupabase();
+  const { data, error } = await client
+    .from("account_deposit_requests")
+    .select(
+      "id, amount, method, currency_code, sender_name, status, application_reference, created_at, deposit_instructions ( payment_rail, network ), user_accounts ( account_number, currency_code, account_types ( name ) )",
+    )
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  throwIfError(error);
+  return data;
+}
+
+function fileExtension(file) {
+  return file.name.split(".").pop()?.toLowerCase() || "bin";
+}
+
+export async function submitAccountDepositRequest({
+  accountId,
+  amount,
+  chequeFile,
+  linkedBankAccountId,
+  method,
+}) {
+  const client = requireSupabase();
+  const {
+    data: { user },
+    error: userError,
+  } = await client.auth.getUser();
+  throwIfError(userError);
+
+  if (!user) throw new Error("Your session has expired. Please sign in again.");
+
+  let chequeFilePath = null;
+
+  if (method === "cheque") {
+    if (!chequeFile)
+      throw new Error("Choose a cheque image before continuing.");
+    chequeFilePath = `${user.id}/${crypto.randomUUID()}.${fileExtension(chequeFile)}`;
+    const { error: uploadError } = await client.storage
+      .from("cheque-deposits")
+      .upload(chequeFilePath, chequeFile, {
+        contentType: chequeFile.type,
+        upsert: false,
+      });
+    throwIfError(uploadError);
+  }
+
+  const { data, error } = await client.rpc("submit_account_deposit_request", {
+    p_account_id: accountId,
+    p_amount: Number(amount),
+    p_cheque_file_path: chequeFilePath,
+    p_linked_bank_account_id:
+      method === "wire_ach" ? linkedBankAccountId : null,
+    p_method: method,
+  });
+
+  if (error && chequeFilePath) {
+    await client.storage.from("cheque-deposits").remove([chequeFilePath]);
+  }
 
   throwIfError(error);
   return data;

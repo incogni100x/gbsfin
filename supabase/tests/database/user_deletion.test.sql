@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(11);
+select plan(14);
 
 select is(
   (
@@ -58,10 +58,10 @@ select is(
   (
     select confdeltype::text
     from pg_constraint
-    where conname = 'deposit_confirmations_user_id_fkey'
+    where conname = 'currency_deposits_user_id_fkey'
   ),
   'c',
-  'deleting a profile cascades to deposit confirmations'
+  'deleting a profile cascades to currency deposits'
 );
 
 select is(
@@ -78,10 +78,28 @@ select is(
   (
     select confdeltype::text
     from pg_constraint
-    where conname = 'currency_transfers_destination_account_id_fkey'
+    where conname = 'currency_conversions_destination_account_id_fkey'
   ),
   'c',
   'deleting a bank account cascades to linked transfer records'
+);
+
+select is(
+  (select confdeltype::text from pg_constraint where conname = 'bank_beneficiaries_user_id_fkey'),
+  'c',
+  'deleting a profile cascades to bank beneficiaries'
+);
+
+select is(
+  (select confdeltype::text from pg_constraint where conname = 'bank_transfers_user_id_fkey'),
+  'c',
+  'deleting a profile cascades to bank transfers'
+);
+
+select is(
+  (select confdeltype::text from pg_constraint where conname = 'bank_transfers_source_account_id_fkey'),
+  'c',
+  'deleting a source account cascades to bank transfers'
 );
 
 select is(

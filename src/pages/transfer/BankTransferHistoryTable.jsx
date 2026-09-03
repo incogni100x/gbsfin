@@ -9,7 +9,7 @@ import {
 } from "@/components/base/table/table";
 
 const statusClassNames = {
-  approved:
+  completed:
     "bg-[var(--color-state-success-base)] text-[var(--color-state-success-text)]",
   pending:
     "bg-[var(--color-status-yellow-background)] text-[var(--color-status-yellow-text)]",
@@ -17,32 +17,18 @@ const statusClassNames = {
     "bg-[var(--color-background-tertiary-error)] text-[var(--color-text-error-primary)]",
 };
 
-function destinationLabel(transfer) {
-  if (transfer.wallet_address) {
-    return `${transfer.network} · ${transfer.wallet_address.slice(0, 8)}…${transfer.wallet_address.slice(-5)}`;
-  }
-
-  const account = transfer.account_number
-    ? ` · •••• ${transfer.account_number.slice(-4)}`
-    : transfer.iban
-      ? ` · •••• ${transfer.iban.slice(-4)}`
-      : "";
-
-  return `${transfer.bank_name || "Bank account"}${account}`;
-}
-
-function CurrencyTransferHistoryTable({ transfers }) {
+export default function BankTransferHistoryTable({ transfers }) {
   return (
     <Table
-      aria-label="Currency transfer requests"
-      className="min-w-[720px]"
+      aria-label="Bank transfer history"
+      className="min-w-[760px]"
       containerClassName="overflow-x-auto overflow-y-hidden rounded-[var(--radius-2lg)] border border-[var(--color-separator-border)] bg-[var(--color-background-primary-default)] touch-pan-x"
       size="md"
     >
       <TableHeader>
-        <TableColumn isRowHeader>Currency</TableColumn>
-        <TableColumn>Destination</TableColumn>
-        <TableColumn>Submitted</TableColumn>
+        <TableColumn isRowHeader>Reference</TableColumn>
+        <TableColumn>Recipient</TableColumn>
+        <TableColumn>Date</TableColumn>
         <TableColumn>Amount</TableColumn>
         <TableColumn>Status</TableColumn>
       </TableHeader>
@@ -50,24 +36,32 @@ function CurrencyTransferHistoryTable({ transfers }) {
         items={transfers}
         renderEmptyState={() => (
           <div className="text-body-medium p-6 text-[var(--color-text-secondary)]">
-            No currency transfers yet.
+            No bank transfers yet.
           </div>
         )}
       >
         {(transfer) => (
           <TableRow id={transfer.id}>
-            <TableCell>{transfer.currency_code}</TableCell>
-            <TableCell>{destinationLabel(transfer)}</TableCell>
-            <TableCell>
-              {new Intl.DateTimeFormat("en", {
-                dateStyle: "medium",
-              }).format(new Date(transfer.created_at))}
+            <TableCell className="financial-number">
+              {transfer.application_reference}
             </TableCell>
-            <TableCell className="whitespace-nowrap">
+            <TableCell>
+              {transfer.recipient_name}
+              <span className="text-body-2-medium block text-[var(--color-text-secondary)]">
+                {transfer.recipient_bank_name} · ••••{" "}
+                {transfer.recipient_account_number.slice(-4)}
+              </span>
+            </TableCell>
+            <TableCell>
+              {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(
+                new Date(transfer.created_at),
+              )}
+            </TableCell>
+            <TableCell className="financial-number whitespace-nowrap">
               {transfer.amount.toLocaleString("en", {
-                maximumFractionDigits: 6,
-              })}{" "}
-              {transfer.currency_code}
+                style: "currency",
+                currency: transfer.currency_code,
+              })}
             </TableCell>
             <TableCell>
               <Badge className={statusClassNames[transfer.status]}>
@@ -80,5 +74,3 @@ function CurrencyTransferHistoryTable({ transfers }) {
     </Table>
   );
 }
-
-export default CurrencyTransferHistoryTable;

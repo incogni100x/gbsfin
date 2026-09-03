@@ -162,12 +162,19 @@ function DashboardPage() {
         <h2 className="text-title-3-medium sm:text-title-2-medium" id="quick-links-heading">
           Quick links
         </h2>
-        <div className="mt-3">
+        <div className="mt-3 flex flex-wrap gap-3">
           <Link
             className="text-body-medium inline-flex min-h-9 items-center gap-2 rounded-2lg bg-[var(--color-accent-600)] px-3 text-white no-underline transition-colors hover:bg-[var(--color-accent-500)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus-ring)]"
             to="/manage-accounts"
           >
             Manage accounts
+            <HugeiconsIcon aria-hidden="true" icon={ArrowRight01Icon} size={16} strokeWidth={1.75} />
+          </Link>
+          <Link
+            className="text-body-medium inline-flex min-h-9 items-center gap-2 rounded-2lg bg-[var(--color-accent-600)] px-3 text-white no-underline transition-colors hover:bg-[var(--color-accent-500)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-border-focus-ring)]"
+            to="/deposit?show=available#currency-balances"
+          >
+            Add another currency
             <HugeiconsIcon aria-hidden="true" icon={ArrowRight01Icon} size={16} strokeWidth={1.75} />
           </Link>
         </div>

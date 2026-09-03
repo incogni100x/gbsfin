@@ -1,5 +1,6 @@
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
+import { Select, SelectItem } from "@/components/base/select/select";
 import {
   Dialog,
   DialogContent,
@@ -15,24 +16,18 @@ import { useAuth } from "@/auth/useAuth.js";
 import {
   depositInstructionsQueryKey,
   getDepositInstructions,
-  submitDepositConfirmation,
+  submitCurrencyDeposit,
+  submitStablecoinDepositRequest,
 } from "./depositService.js";
 
-const instructionLabels = {
-  account_number: "Account number",
-  beneficiary_name: "Beneficiary",
-  bsb: "BSB",
-  clabe: "CLABE",
-  iban: "IBAN",
-  network: "Network",
-  routing_number: "Routing number",
-  sort_code: "Sort code",
-  swift_bic: "SWIFT / BIC",
-  wallet_address: "Wallet address",
-};
+function maskAccount(accountNumber) {
+  return `•••• ${String(accountNumber).slice(-4)}`;
+}
 
-function DepositInstructionsDialog({ currency, onSubmitted }) {
+function DepositInstructionsDialog({ accounts = [], currency, onSubmitted }) {
   const { profile } = useAuth();
+  const usdAccounts = accounts.filter((account) => account.currency === "USD");
+  const [accountId, setAccountId] = useState("");
   const [amount, setAmount] = useState("");
   const [detailsReady, setDetailsReady] = useState(false);
   const [error, setError] = useState("");
@@ -44,13 +39,13 @@ function DepositInstructionsDialog({ currency, onSubmitted }) {
   const [submitting, setSubmitting] = useState(false);
   const { data: instructions = [], error: instructionsError, isPending } =
     useQuery({
-      enabled: open && step === "details",
+      enabled: open,
       queryFn: () => getDepositInstructions(currency.code),
       queryKey: depositInstructionsQueryKey(currency.code),
       staleTime: 10 * 60 * 1000,
     });
   const instruction = instructions[0];
-  const isCryptoDeposit = Boolean(instruction?.wallet_address);
+  const isCryptoDeposit = currency.currency_kind === "stablecoin";
 
   useEffect(() => {
     if (!open || step !== "details" || isPending) return undefined;
@@ -64,20 +59,37 @@ function DepositInstructionsDialog({ currency, onSubmitted }) {
     setDetailsReady(false);
     setStep("form");
     setAmount("");
+    setAccountId("");
     setError("");
   };
 
   const confirmSent = async () => {
     setError("");
+
+    if (!instruction?.id) {
+      setError("Deposit processing is temporarily unavailable. Please try again.");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
-      await submitDepositConfirmation({
-        amount,
-        currencyCode: currency.code,
-        instructionId: instruction.id,
-        senderName,
-      });
+      if (isCryptoDeposit) {
+        await submitStablecoinDepositRequest({
+          accountId,
+          amount,
+          currencyCode: currency.code,
+          instructionId: instruction.id,
+          senderName,
+        });
+      } else {
+        await submitCurrencyDeposit({
+          amount,
+          currencyCode: currency.code,
+          instructionId: instruction.id,
+          senderName,
+        });
+      }
       await onSubmitted();
       setStep("submitted");
     } catch (submissionError) {
@@ -108,11 +120,35 @@ function DepositInstructionsDialog({ currency, onSubmitted }) {
                 size={40}
                 strokeWidth={1.75}
               />
-              <DialogTitle className="mt-4">Deposit confirmation received</DialogTitle>
+              <DialogTitle className="mt-4">
+                {isCryptoDeposit
+                  ? "Deposit confirmation received"
+                  : "Deposit request submitted"}
+              </DialogTitle>
               <p className="text-body-medium mt-2 text-[var(--color-text-secondary)]">
-                Your {currency.code} deposit is pending review. Your balance
-                will update once it has been approved.
+                {isCryptoDeposit
+                  ? `Your ${currency.code} deposit is pending review. Your selected USD account will update once it has been approved.`
+                  : `Your ${currency.code} direct deposit request has been recorded.`}
               </p>
+              {!isCryptoDeposit && (
+                <div className="mt-5 rounded-[var(--radius-lg)] border border-[var(--color-separator-border)] bg-[var(--color-background-secondary-default)] p-4 text-left">
+                  <strong className="text-headline-medium">
+                    Direct Deposit
+                  </strong>
+                  <p className="text-body-medium mt-2 text-[var(--color-text-secondary)]">
+                    Contact{" "}
+                    <a
+                      className="font-medium text-[var(--color-accent-700)] underline underline-offset-2"
+                      href={`mailto:deposit@globalstripefin.com?subject=${encodeURIComponent(
+                        `${currency.code} direct deposit request`,
+                      )}`}
+                    >
+                      deposit@globalstripefin.com
+                    </a>{" "}
+                    to receive the account details for your deposit.
+                  </p>
+                </div>
+              )}
               <div className="financial-number mt-5 grid gap-3 rounded-[var(--radius-lg)] border border-[var(--color-separator-border)] bg-[var(--color-background-secondary-default)] p-4 text-left">
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-body-medium text-[var(--color-text-secondary)]">
@@ -123,14 +159,24 @@ function DepositInstructionsDialog({ currency, onSubmitted }) {
                   </strong>
                 </div>
                 {isCryptoDeposit && (
-                  <div className="flex items-center justify-between gap-4 border-t border-[var(--color-separator-border)] pt-3">
-                    <span className="text-body-medium text-[var(--color-text-secondary)]">
-                      Network
-                    </span>
-                    <strong className="text-body-medium text-right">
-                      {instruction?.network || instruction?.payment_rail}
-                    </strong>
-                  </div>
+                  <>
+                    <div className="flex items-center justify-between gap-4 border-t border-[var(--color-separator-border)] pt-3">
+                      <span className="text-body-medium text-[var(--color-text-secondary)]">
+                        Account to credit
+                      </span>
+                      <strong className="text-body-medium text-right">
+                        {usdAccounts.find((account) => account.id === accountId)?.name || "USD Account"}
+                      </strong>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 border-t border-[var(--color-separator-border)] pt-3">
+                      <span className="text-body-medium text-[var(--color-text-secondary)]">
+                        Network
+                      </span>
+                      <strong className="text-body-medium text-right">
+                        {instruction?.network || instruction?.payment_rail}
+                      </strong>
+                    </div>
+                  </>
                 )}
                 <div className="flex items-center justify-between gap-4 border-t border-[var(--color-separator-border)] pt-3">
                   <span className="text-body-medium text-[var(--color-text-secondary)]">
@@ -140,7 +186,9 @@ function DepositInstructionsDialog({ currency, onSubmitted }) {
                 </div>
               </div>
               <p className="text-body-2-medium mt-4 text-[var(--color-text-secondary)]">
-                We’ll notify you when your deposit has been reviewed.
+                {isCryptoDeposit
+                  ? "We’ll notify you when your deposit has been reviewed."
+                  : "Include the currency, deposit amount, and sender name in your message."}
               </p>
               <Button className="mt-5" onClick={closeDialog}>
                 Close
@@ -154,6 +202,23 @@ function DepositInstructionsDialog({ currency, onSubmitted }) {
               </p>
 
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                {isCryptoDeposit && (
+                  <label className="grid gap-1 text-body-medium sm:col-span-2">
+                    Account to credit
+                    <Select
+                      aria-label="Account to credit"
+                      onSelectionChange={(key) => setAccountId(String(key))}
+                      placeholder="Select a USD account"
+                      selectedKey={accountId || null}
+                    >
+                      {usdAccounts.map((account) => (
+                        <SelectItem id={account.id} key={account.id}>
+                          {account.name} · {maskAccount(account.accountNumber)}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                  </label>
+                )}
                 <Input
                   label="Amount to deposit"
                   leadingAddon={
@@ -177,14 +242,45 @@ function DepositInstructionsDialog({ currency, onSubmitted }) {
 
               <Button
                 className="mt-5"
-                disabled={!Number.parseFloat(amount) || !senderName.trim()}
-                onClick={() => {
-                  setDetailsReady(false);
-                  setStep("details");
+                disabled={
+                  !Number.parseFloat(amount) ||
+                  !senderName.trim() ||
+                  (isCryptoDeposit && (!accountId || !usdAccounts.length)) ||
+                  (!isCryptoDeposit && (isPending || !instruction)) ||
+                  submitting
+                }
+                onClick={async () => {
+                  if (isCryptoDeposit) {
+                    setDetailsReady(false);
+                    setStep("details");
+                    return;
+                  }
+
+                  await confirmSent();
                 }}
               >
-                Continue
+                {isCryptoDeposit
+                  ? "Continue"
+                  : submitting
+                    ? "Submitting…"
+                    : "Submit deposit request"}
               </Button>
+              {!isCryptoDeposit && instructionsError && (
+                <p className="text-body-2-medium mt-3 text-[var(--color-text-error-primary)]">
+                  {instructionsError.message ||
+                    "Deposit processing is temporarily unavailable."}
+                </p>
+              )}
+              {isCryptoDeposit && !usdAccounts.length && (
+                <p className="text-body-2-medium mt-3 text-[var(--color-text-error-primary)]">
+                  You need a USD bank account before making a stablecoin deposit.
+                </p>
+              )}
+              {error && (
+                <p className="text-body-2-medium mt-3 text-[var(--color-text-error-primary)]">
+                  {error}
+                </p>
+              )}
             </div>
           ) : (
             <div>
@@ -210,67 +306,45 @@ function DepositInstructionsDialog({ currency, onSubmitted }) {
                 </p>
               ) : (
                 <>
-                  {isCryptoDeposit ? (
-                    <div className="mt-5 rounded-[var(--radius-2lg)] border border-[var(--color-separator-border)] bg-[var(--color-background-secondary-default)] p-4">
-                      <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <p className="text-headline-medium">Deposit address</p>
-                          <p className="text-body-2-medium mt-1 text-[var(--color-text-secondary)]">
-                            Send {currency.code} only on the network below.
-                          </p>
-                        </div>
-                        <span className="text-body-2-medium rounded-full bg-[var(--color-background-primary-default)] px-3 py-1.5 text-[var(--color-text-primary)]">
-                          {instruction.network || instruction.payment_rail}
-                        </span>
+                  <div className="mt-5 rounded-[var(--radius-2lg)] border border-[var(--color-separator-border)] bg-[var(--color-background-secondary-default)] p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-headline-medium">Deposit address</p>
+                        <p className="text-body-2-medium mt-1 text-[var(--color-text-secondary)]">
+                          Send {currency.code} only on the network below.
+                        </p>
                       </div>
-
-                      <div className="mt-5 grid items-center gap-5 sm:grid-cols-[auto_1fr]">
-                        <div className="mx-auto rounded-[var(--radius-lg)] bg-white p-3 sm:mx-0">
-                          <QRCodeSVG
-                            bgColor="#ffffff"
-                            fgColor="#111827"
-                            level="M"
-                            size={132}
-                            value={instruction.wallet_address}
-                          />
-                        </div>
-                        <dl className="financial-number min-w-0 text-body-2-medium">
-                          <div>
-                            <dt className="text-[var(--color-text-secondary)]">
-                              Wallet address
-                            </dt>
-                            <dd className="mt-2 break-all text-body-medium text-[var(--color-text-primary)]">
-                              {instruction.wallet_address}
-                            </dd>
-                          </div>
-                        </dl>
-                      </div>
-                      <p className="text-body-2-medium mt-5 border-t border-[var(--color-separator-border)] pt-4 text-[var(--color-text-secondary)]">
-                        Scan the QR code or copy the address exactly. Sending on
-                        a different network may result in a permanent loss of funds.
-                      </p>
+                      <span className="text-body-2-medium rounded-full bg-[var(--color-background-primary-default)] px-3 py-1.5 text-[var(--color-text-primary)]">
+                        {instruction.network || instruction.payment_rail}
+                      </span>
                     </div>
-                  ) : (
-                    <div className="mt-5 rounded-[var(--radius-2lg)] border border-[var(--color-separator-border)] bg-[var(--color-background-secondary-default)] p-4">
-                      <strong className="text-headline-medium">
-                        {instruction.payment_rail}
-                      </strong>
-                      <dl className="financial-number text-body-2-medium mt-4 grid gap-3">
-                        {Object.entries(instructionLabels).map(([key, label]) =>
-                          instruction[key] ? (
-                            <div key={key}>
-                              <dt className="text-[var(--color-text-secondary)]">
-                                {label}
-                              </dt>
-                              <dd className="mt-1 break-all text-[var(--color-text-primary)]">
-                                {instruction[key]}
-                              </dd>
-                            </div>
-                          ) : null,
-                        )}
+
+                    <div className="mt-5 grid items-center gap-5 sm:grid-cols-[auto_1fr]">
+                      <div className="mx-auto rounded-[var(--radius-lg)] bg-white p-3 sm:mx-0">
+                        <QRCodeSVG
+                          bgColor="#ffffff"
+                          fgColor="#111827"
+                          level="M"
+                          size={132}
+                          value={instruction.wallet_address}
+                        />
+                      </div>
+                      <dl className="financial-number min-w-0 text-body-2-medium">
+                        <div>
+                          <dt className="text-[var(--color-text-secondary)]">
+                            Wallet address
+                          </dt>
+                          <dd className="mt-2 break-all text-body-medium text-[var(--color-text-primary)]">
+                            {instruction.wallet_address}
+                          </dd>
+                        </div>
                       </dl>
                     </div>
-                  )}
+                    <p className="text-body-2-medium mt-5 border-t border-[var(--color-separator-border)] pt-4 text-[var(--color-text-secondary)]">
+                      Scan the QR code or copy the address exactly. Sending on a
+                      different network may result in a permanent loss of funds.
+                    </p>
+                  </div>
 
                   <div className="mt-5 flex flex-col-reverse gap-3 [&_button]:w-full sm:flex-row sm:[&_button]:w-auto">
                     <Button

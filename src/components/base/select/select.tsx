@@ -86,6 +86,11 @@ export function Select<T extends object>({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLElement>(null);
   const [isOpen, setIsOpen] = useState(false);
+  // Radix dialogs block interaction outside their content. Keep a select's
+  // portalled list inside the nearest dialog so its options remain clickable.
+  const dialogPortalContainer = triggerRef.current?.closest(
+    '[data-slot="dialog-content"]',
+  );
   useDismissOnOutsidePress(isOpen, () => setIsOpen(false), [triggerRef, popoverRef]);
   // Pressing the trigger while open closes the popover instead of reopening
   const allowOpenChange = useTriggerToggle(isOpen, triggerRef);
@@ -135,6 +140,7 @@ export function Select<T extends object>({
           <AriaPopover
             ref={popoverRef}
             isNonModal
+            UNSTABLE_portalContainer={dialogPortalContainer ?? undefined}
             offset={4}
             className={cx(
               MENU_POPOVER_WIDTH,
