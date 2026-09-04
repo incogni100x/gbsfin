@@ -3,7 +3,8 @@ import {
   type SupabaseClient,
 } from "@supabase/supabase-js";
 
-const IDENTITY_DOCUMENTS_BUCKET = "identity-documents";
+const USER_STORAGE_BUCKETS = ["identity-documents", "cheque-deposits"] as const;
+const MAX_BATCH_SIZE = 50;
 const LIST_PAGE_SIZE = 100;
 const REMOVE_BATCH_SIZE = 1000;
 
@@ -84,36 +85,59 @@ async function listFilesRecursively(
   return files;
 }
 
-async function deleteIdentityDocuments(
+async function deleteUserFiles(
   client: SupabaseClient,
   userId: string,
 ) {
-  const files = await listFilesRecursively(
-    client,
-    IDENTITY_DOCUMENTS_BUCKET,
-    userId,
-  );
+  let deletedFileCount = 0;
 
-  for (let index = 0; index < files.length; index += REMOVE_BATCH_SIZE) {
-    const batch = files.slice(index, index + REMOVE_BATCH_SIZE);
-    const { error } = await client.storage
-      .from(IDENTITY_DOCUMENTS_BUCKET)
-      .remove(batch);
+  for (const bucket of USER_STORAGE_BUCKETS) {
+    const files = await listFilesRecursively(client, bucket, userId);
 
-    if (error) throw error;
+    for (let index = 0; index < files.length; index += REMOVE_BATCH_SIZE) {
+      const batch = files.slice(index, index + REMOVE_BATCH_SIZE);
+      const { error } = await client.storage.from(bucket).remove(batch);
+      if (error) throw error;
+    }
+
+    const remainingFiles = await listFilesRecursively(client, bucket, userId);
+    if (remainingFiles.length > 0) {
+      throw new Error(`Some files could not be removed from ${bucket}`);
+    }
+    deletedFileCount += files.length;
   }
 
-  const remainingFiles = await listFilesRecursively(
-    client,
-    IDENTITY_DOCUMENTS_BUCKET,
-    userId,
-  );
+  return deletedFileCount;
+}
 
-  if (remainingFiles.length > 0) {
-    throw new Error("Some identity documents could not be removed");
+function parseTargetUserIds(requestBody: Record<string, unknown>) {
+  const batchIds = requestBody.user_ids;
+  const batchConfirmationIds = requestBody.confirm_user_ids;
+
+  if (batchIds !== undefined || batchConfirmationIds !== undefined) {
+    if (!Array.isArray(batchIds) || !Array.isArray(batchConfirmationIds)) {
+      throw new Error("user_ids and confirm_user_ids must both be arrays");
+    }
+    if (batchIds.length === 0 || batchIds.length > MAX_BATCH_SIZE) {
+      throw new Error(`Provide between 1 and ${MAX_BATCH_SIZE} user IDs`);
+    }
+    if (
+      batchIds.length !== batchConfirmationIds.length ||
+      batchIds.some((id, index) => !isUuid(id) || id !== batchConfirmationIds[index])
+    ) {
+      throw new Error("user_ids and confirm_user_ids must contain the same valid UUIDs in the same order");
+    }
+    if (new Set(batchIds).size !== batchIds.length) {
+      throw new Error("user_ids must not contain duplicates");
+    }
+    return batchIds as string[];
   }
 
-  return files.length;
+  const userId = requestBody.user_id;
+  if (!isUuid(userId) || requestBody.confirm_user_id !== userId) {
+    throw new Error("user_id and confirm_user_id must be the same valid UUID");
+  }
+  return [userId];
 }
 
 Deno.serve(async (request: Request) => {
@@ -148,12 +172,12 @@ Deno.serve(async (request: Request) => {
     return jsonResponse({ error: "A valid JSON body is required" }, 400);
   }
 
-  const userId = requestBody.user_id;
-  const confirmationUserId = requestBody.confirm_user_id;
-
-  if (!isUuid(userId) || confirmationUserId !== userId) {
+  let userIds: string[];
+  try {
+    userIds = parseTargetUserIds(requestBody);
+  } catch (error) {
     return jsonResponse(
-      { error: "user_id and confirm_user_id must be the same valid user ID" },
+      { error: error instanceof Error ? error.message : "Invalid user IDs" },
       400,
     );
   }
@@ -176,51 +200,69 @@ Deno.serve(async (request: Request) => {
       return jsonResponse({ error: "Authentication required" }, 401);
     }
 
-    if (data.user.id !== userId) {
+    if (userIds.length !== 1 || data.user.id !== userIds[0]) {
       return jsonResponse(
-        { error: "You can only delete your own account" },
+        { error: "User sessions can only delete their own account" },
         403,
       );
     }
   }
 
-  const { data: targetUser, error: targetUserError } =
-    await adminClient.auth.admin.getUserById(userId);
-
-  if (targetUserError || !targetUser.user) {
-    return jsonResponse({ error: "User was not found" }, 404);
+  const missingUserIds: string[] = [];
+  for (const userId of userIds) {
+    const { data, error } = await adminClient.auth.admin.getUserById(userId);
+    if (error || !data.user) missingUserIds.push(userId);
   }
 
-  try {
-    const deletedDocumentCount = await deleteIdentityDocuments(
-      adminClient,
-      userId,
-    );
-    const { error: deleteUserError } =
-      await adminClient.auth.admin.deleteUser(userId, false);
-
-    if (deleteUserError) throw deleteUserError;
-
+  if (missingUserIds.length > 0) {
     return jsonResponse(
       {
-        deleted: true,
-        deleted_document_count: deletedDocumentCount,
+        error: "One or more users were not found. No users were deleted.",
+        missing_user_ids: missingUserIds,
+      },
+      404,
+    );
+  }
+
+  const deletedUsers: Array<{
+    deleted_file_count: number;
+    user_id: string;
+  }> = [];
+  const failedUsers: Array<{ error: string; user_id: string }> = [];
+
+  for (const userId of userIds) {
+    try {
+      const deletedFileCount = await deleteUserFiles(adminClient, userId);
+      const { error } = await adminClient.auth.admin.deleteUser(userId, false);
+      if (error) throw error;
+      deletedUsers.push({
+        deleted_file_count: deletedFileCount,
         user_id: userId,
-      },
-      200,
-    );
-  } catch (error) {
-    console.error("User deletion failed", {
-      message: error instanceof Error ? error.message : "Unknown error",
-      userId,
-    });
-
-    return jsonResponse(
-      {
-        error:
-          "The user could not be fully deleted. The operation is safe to retry.",
-      },
-      500,
-    );
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error("User deletion failed", { message, userId });
+      failedUsers.push({
+        error: "Deletion failed. This user is safe to retry.",
+        user_id: userId,
+      });
+    }
   }
+
+  const allDeleted = failedUsers.length === 0;
+  const response: Record<string, unknown> = {
+    deleted: allDeleted,
+    deleted_count: deletedUsers.length,
+    deleted_users: deletedUsers,
+    failed_count: failedUsers.length,
+    failed_users: failedUsers,
+    requested_count: userIds.length,
+  };
+
+  if (userIds.length === 1 && deletedUsers[0]) {
+    response.user_id = deletedUsers[0].user_id;
+    response.deleted_document_count = deletedUsers[0].deleted_file_count;
+  }
+
+  return jsonResponse(response, allDeleted ? 200 : deletedUsers.length ? 207 : 500);
 });

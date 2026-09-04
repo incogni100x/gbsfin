@@ -259,7 +259,7 @@ function AccountDepositDialog({
                         </p>
                         <Button
                           className="mt-3"
-                          onClick={() => navigate("/linked-accounts")}
+                          onClick={() => navigate("/manage-accounts")}
                           size="small"
                           variant="secondary"
                         >
