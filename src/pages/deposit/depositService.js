@@ -229,8 +229,7 @@ export async function submitAccountDepositRequest({
   let chequeFilePath = null;
 
   if (method === "cheque") {
-    if (!chequeFile)
-      throw new Error("Choose a check image before continuing.");
+    if (!chequeFile) throw new Error("Choose a check image before continuing.");
     chequeFilePath = `${user.id}/${crypto.randomUUID()}.${fileExtension(chequeFile)}`;
     const { error: uploadError } = await client.storage
       .from("cheque-deposits")
