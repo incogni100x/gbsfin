@@ -75,6 +75,7 @@ function LinkedAccountsPage() {
   const accountNumbersMatch =
     Boolean(form.account_number.trim()) &&
     form.account_number.trim() === form.confirm_account_number.trim();
+  const routingNumberComplete = Boolean(form.routing_number.trim());
 
   return (
     <section>
@@ -160,7 +161,7 @@ function LinkedAccountsPage() {
                 account_name: form.account_name.trim(),
                 account_number: form.account_number.trim(),
                 bank_name: form.bank_name.trim(),
-                routing_number: form.routing_number.trim() || null,
+                routing_number: form.routing_number.trim(),
               });
             }}
           >
@@ -228,10 +229,11 @@ function LinkedAccountsPage() {
             />
             <Input
               className="sm:col-span-2"
-              label="Routing number (optional)"
+              label="Routing number"
               inputMode="numeric"
               onChange={(value) => update("routing_number", value)}
               placeholder="Routing number"
+              required
               value={form.routing_number || ""}
             />
           </form>
@@ -246,7 +248,11 @@ function LinkedAccountsPage() {
               Cancel
             </Button>
             <Button
-              disabled={save.isPending || !accountNumbersMatch}
+              disabled={
+                save.isPending ||
+                !accountNumbersMatch ||
+                !routingNumberComplete
+              }
               form="linked-account-form"
               type="submit"
             >

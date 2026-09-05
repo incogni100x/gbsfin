@@ -244,6 +244,7 @@ function CurrencyTransferDialog({ currency }) {
                           label={label}
                           onChange={(value) => setField(field, value)}
                           placeholder={placeholder}
+                          required={field === "routingNumber"}
                           value={details[field]}
                         />
                       ),
