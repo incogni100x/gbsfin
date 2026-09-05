@@ -64,10 +64,10 @@ function MobileNavigationDrawer({ navigationItems }) {
                   </NavLink>
                 ))}
                 <div className="my-2 h-px bg-[var(--color-separator-border)]" />
-                <a
+                <NavLink
                   className="text-headline-medium flex items-center gap-3 rounded-md px-3 py-3 text-[var(--color-text-secondary)] no-underline"
-                  href="mailto:support@globalstripefin.com"
                   onClick={() => setOpen(false)}
+                  to="/contact"
                 >
                   <HugeiconsIcon
                     aria-hidden="true"
@@ -76,7 +76,7 @@ function MobileNavigationDrawer({ navigationItems }) {
                     strokeWidth={1.75}
                   />
                   Help and support
-                </a>
+                </NavLink>
                 <NavLink
                   className={({ isActive }) =>
                     `text-headline-medium flex items-center gap-3 rounded-md px-3 py-3 no-underline ${

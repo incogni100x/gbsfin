@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(9);
+select plan(15);
 
 select has_table(
   'public',
@@ -81,6 +81,61 @@ select ok(
     'EXECUTE'
   ),
   'authenticated users can request a valid loan through the RPC'
+);
+
+select is(
+  (select count(*)::integer from public.loan_types where name in (
+    'Home Equity Line of Credit (HELOC)', 'SBA Loans',
+    'Commercial Real Estate', 'Lines of Credit'
+  ) and is_active),
+  4,
+  'all four new loan products are active'
+);
+
+select is(
+  (select count(*)::integer from public.loan_type_plans eligibility
+   join public.loan_types loan_type on loan_type.id = eligibility.loan_type_id
+   where loan_type.name = 'Home Equity Line of Credit (HELOC)'),
+  3,
+  'HELOC has three plans'
+);
+
+select is(
+  (select count(*)::integer from public.loan_type_plans eligibility
+   join public.loan_types loan_type on loan_type.id = eligibility.loan_type_id
+   where loan_type.name = 'SBA Loans'),
+  3,
+  'SBA Loans has three plans'
+);
+
+select is(
+  (select count(*)::integer from public.loan_type_plans eligibility
+   join public.loan_types loan_type on loan_type.id = eligibility.loan_type_id
+   where loan_type.name = 'Commercial Real Estate'),
+  4,
+  'Commercial Real Estate has four plans'
+);
+
+select is(
+  (select count(*)::integer from public.loan_type_plans eligibility
+   join public.loan_types loan_type on loan_type.id = eligibility.loan_type_id
+   where loan_type.name = 'Lines of Credit'),
+  3,
+  'Lines of Credit has three plans'
+);
+
+select ok(
+  not exists (
+    select 1
+    from public.loan_type_plans eligibility
+    join public.loan_types loan_type on loan_type.id = eligibility.loan_type_id
+    join public.loan_plans plan on plan.id = eligibility.plan_id
+    where loan_type.name in (
+      'Home Equity Line of Credit (HELOC)', 'SBA Loans',
+      'Commercial Real Estate', 'Lines of Credit'
+    ) and plan.annual_interest_rate >= 5.70
+  ),
+  'new product rates remain below the mortgage rate floor'
 );
 
 select * from finish();

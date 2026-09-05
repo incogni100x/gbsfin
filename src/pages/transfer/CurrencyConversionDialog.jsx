@@ -5,6 +5,7 @@ import { Select, SelectItem } from "@/components/base/select/select";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { depositOverviewQueryKey } from "@/pages/deposit/depositService.js";
+import { userAccountsQueryKey } from "@/pages/dashboard/dashboardService.js";
 import {
   convertCurrency,
   exchangeRatesQueryKey,
@@ -17,6 +18,7 @@ import { createCurrencyConversion } from "./currencyTransferService.js";
 import TransferConfirmation from "./TransferConfirmation.jsx";
 
 export default function CurrencyConversionDialog({
+  accounts,
   availableCurrencies,
   currency,
 }) {
@@ -25,13 +27,27 @@ export default function CurrencyConversionDialog({
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState("form");
   const [amount, setAmount] = useState("");
-  const [targetCode, setTargetCode] = useState(null);
+  const [targetKey, setTargetKey] = useState(null);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
-  const targets = availableCurrencies.filter(
-    (item) => item.code !== currency.code,
-  );
-  const target = targets.find((item) => item.code === targetCode);
+  const targets = [
+    ...availableCurrencies
+      .filter((item) => item.code !== currency.code)
+      .map((item) => ({
+        ...item,
+        key: `currency:${item.code}`,
+        kind: "currency_balance",
+      })),
+    ...accounts.map((account) => ({
+      accountId: account.id,
+      code: "USD",
+      key: `account:${account.id}`,
+      kind: "bank_account",
+      name: `${account.name} Account •••• ${account.accountNumber.slice(-4)}`,
+      symbol: "$",
+    })),
+  ];
+  const target = targets.find((item) => item.key === targetKey);
   const { data: rates } = useQuery({
     queryFn: getExchangeRates,
     queryKey: exchangeRatesQueryKey,
@@ -52,7 +68,7 @@ export default function CurrencyConversionDialog({
     setOpen(false);
     setStep("form");
     setAmount("");
-    setTargetCode(null);
+    setTargetKey(null);
     setError("");
     setResult(null);
   };
@@ -63,7 +79,9 @@ export default function CurrencyConversionDialog({
     try {
       const conversion = await mutation.mutateAsync({
         amount,
+        destinationAccountId: target.accountId,
         destinationCurrencyCode: target.code,
+        destinationType: target.kind,
         sourceCurrencyCode: currency.code,
       });
       setResult(conversion);
@@ -74,7 +92,10 @@ export default function CurrencyConversionDialog({
               ...item,
               balance: item.balance - conversion.source_amount,
             };
-          if (item.code === conversion.destination_currency_code)
+          if (
+            conversion.destination_type === "currency_balance" &&
+            item.code === conversion.destination_currency_code
+          )
             return {
               ...item,
               balance: item.balance + conversion.destination_amount,
@@ -82,11 +103,28 @@ export default function CurrencyConversionDialog({
           return item;
         }),
       );
+      if (conversion.destination_type === "bank_account") {
+        queryClient.setQueryData(
+          userAccountsQueryKey(user.id),
+          (items = []) =>
+            items.map((item) =>
+              item.id === conversion.destination_account_id
+                ? {
+                    ...item,
+                    balance: item.balance + conversion.destination_amount,
+                  }
+                : item,
+            ),
+        );
+      }
       void queryClient.invalidateQueries({
         queryKey: depositOverviewQueryKey(user.id),
       });
       void queryClient.invalidateQueries({
         queryKey: ["transactions", user.id],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: userAccountsQueryKey(user.id),
       });
       setStep("success");
     } catch (submissionError) {
@@ -106,7 +144,8 @@ export default function CurrencyConversionDialog({
             <div>
               <DialogTitle>Convert {currency.code}</DialogTitle>
               <p className="text-body-2-medium mt-2 text-[var(--color-text-secondary)]">
-                Convert this balance into another enabled currency.
+                Convert this balance into another enabled currency or a USD
+                bank account.
               </p>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <Input
@@ -132,13 +171,15 @@ export default function CurrencyConversionDialog({
                   </label>
                   <Select
                     aria-labelledby={`convert-to-${currency.code}`}
-                    onSelectionChange={(key) => setTargetCode(String(key))}
-                    placeholder="Select currency"
-                    selectedKey={targetCode}
+                    onSelectionChange={(key) => setTargetKey(String(key))}
+                    placeholder="Select destination"
+                    selectedKey={targetKey}
                   >
                     {targets.map((item) => (
-                      <SelectItem id={item.code} key={item.code}>
-                        {item.code} · {item.name}
+                      <SelectItem id={item.key} key={item.key}>
+                        {item.kind === "bank_account"
+                          ? `USD bank · ${item.name}`
+                          : `${item.code} · ${item.name}`}
                       </SelectItem>
                     ))}
                   </Select>
@@ -224,16 +265,24 @@ export default function CurrencyConversionDialog({
           )}
           {step === "success" && (
             <TransferConfirmation
-              description="Your currency conversion was completed successfully and both balances have been updated."
+              description={
+                result?.destination_type === "bank_account"
+                  ? "Your conversion was completed and the USD value was credited to your bank account."
+                  : "Your currency conversion was completed successfully and both balances have been updated."
+              }
               details={[
                 { label: "Amount converted", value: `${currency.symbol} ${Number(result?.source_amount || amount).toLocaleString("en", { maximumFractionDigits: 6 })} ${result?.source_currency_code || currency.code}`, emphasis: true },
                 { label: "Amount received", value: `${target?.symbol || ""} ${Number(result?.destination_amount || convertedAmount).toLocaleString("en", { maximumFractionDigits: 6 })} ${result?.destination_currency_code || target?.code}`, emphasis: true },
                 { label: "Exchange rate", value: formatExchangeRate(rates, currency.code, target?.code) },
                 { label: "Status", value: "Completed" },
               ]}
-              note="Your updated balances are available immediately."
+              note="Your updated balance is available immediately."
               onDone={close}
-              summary={`${result?.source_currency_code || currency.code} was converted directly into ${result?.destination_currency_code || target?.code}.`}
+              summary={
+                result?.destination_type === "bank_account"
+                  ? `${result?.source_currency_code || currency.code} was converted and credited to ${target?.name}.`
+                  : `${result?.source_currency_code || currency.code} was converted directly into ${result?.destination_currency_code || target?.code}.`
+              }
               summaryTitle="Currency conversion"
               title="Conversion complete"
             />

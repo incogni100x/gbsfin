@@ -31,7 +31,7 @@ function CurrencyCardSkeleton() {
   );
 }
 
-const featuredCurrencyOrder = ["USD"];
+const featuredCurrencyOrder = [];
 
 function orderCurrencies(currencies) {
   return [...currencies].sort((first, second) => {
@@ -92,7 +92,9 @@ function CurrencyDepositSection({ onSubmitted }) {
               ))
             : orderCurrencies(
                 currencies.data.filter(
-                  (currency) => currency.currency_kind === "fiat",
+                  (currency) =>
+                    currency.currency_kind === "fiat" &&
+                    currency.code !== "USD",
                 ),
               ).map((currency) => (
                 <LayerCard

@@ -30,6 +30,7 @@ export async function getDepositOverview(userId) {
     client
       .from("currencies")
       .select("code, name, symbol, currency_kind, display_order")
+      .eq("is_active", true)
       .order("display_order"),
     client
       .from("user_currency_balances")
@@ -229,7 +230,7 @@ export async function submitAccountDepositRequest({
 
   if (method === "cheque") {
     if (!chequeFile)
-      throw new Error("Choose a cheque image before continuing.");
+      throw new Error("Choose a check image before continuing.");
     chequeFilePath = `${user.id}/${crypto.randomUUID()}.${fileExtension(chequeFile)}`;
     const { error: uploadError } = await client.storage
       .from("cheque-deposits")

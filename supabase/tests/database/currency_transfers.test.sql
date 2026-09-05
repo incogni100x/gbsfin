@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(15);
+select plan(16);
 select has_table('public','currency_conversions','currency conversion ledger exists');
 select has_pk('public','currency_conversions','currency conversions have a primary key');
 select has_column('public','currency_conversions','exchange_rate','applied rate is retained');
@@ -8,12 +8,13 @@ select has_column('public','currency_conversions','created_at','conversion has o
 select hasnt_column('public','currency_conversions','completed_at','conversion does not duplicate dates');
 select ok((select relrowsecurity from pg_class where oid='public.currency_conversions'::regclass),'currency conversions use RLS');
 select policies_are('public','currency_conversions',array['currency_conversions_owner_read'],'owners can only read their conversions');
-select has_function('public','convert_currency_balance',array['text','numeric','text'],'atomic conversion RPC exists');
+select has_function('public','convert_currency_balance',array['text','numeric','text','text','uuid'],'atomic conversion RPC supports currency and USD bank destinations');
 select is((select proc.prosecdef from pg_proc proc join pg_namespace n on n.oid=proc.pronamespace where n.nspname='public' and proc.proname='convert_currency_balance'),true,'conversion RPC uses definer privileges');
 select is((select proc.proconfig from pg_proc proc join pg_namespace n on n.oid=proc.pronamespace where n.nspname='public' and proc.proname='convert_currency_balance'),array['search_path=""'],'conversion RPC has an empty search path');
-select ok(has_function_privilege('authenticated','public.convert_currency_balance(text,numeric,text)','EXECUTE'),'users can invoke conversion RPC');
-select ok(not has_function_privilege('anon','public.convert_currency_balance(text,numeric,text)','EXECUTE'),'anonymous users cannot convert');
+select ok(has_function_privilege('authenticated','public.convert_currency_balance(text,numeric,text,text,uuid)','EXECUTE'),'users can invoke conversion RPC');
+select ok(not has_function_privilege('anon','public.convert_currency_balance(text,numeric,text,text,uuid)','EXECUTE'),'anonymous users cannot convert');
 select ok(not has_table_privilege('authenticated','public.currency_conversions','INSERT'),'users cannot insert conversion rows directly');
+select ok(not has_function_privilege('authenticated','public.convert_currency_balance_before_usd_retirement(text,numeric,text)','EXECUTE'),'retired USD-wallet conversion RPC is revoked');
 select ok(not has_function_privilege('authenticated','public.transfer_currency_balance_legacy(text,numeric,text,text,uuid)','EXECUTE'),'legacy mixed RPC is revoked');
 select ok(not has_function_privilege('authenticated','public.transfer_bank_account_to_usd_balance_legacy(uuid,numeric)','EXECUTE'),'bank-to-USD legacy RPC is revoked');
 select * from finish();

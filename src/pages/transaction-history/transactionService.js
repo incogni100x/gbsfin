@@ -110,7 +110,7 @@ export async function getTransactions(userId, { limit = 200 } = {}) {
       deposit.method === "wire_ach"
         ? "Wire / ACH deposit"
         : deposit.method === "cheque"
-          ? "Cheque deposit"
+          ? "Check Deposit"
           : deposit.method === "stablecoin"
             ? `${deposit.currency_code} stablecoin deposit`
             : "Direct deposit",

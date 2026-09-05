@@ -2,7 +2,7 @@ import { requireSupabase } from "@/lib/supabase/client.js";
 
 export const loanKeys = {
   all: (userId) => ["loans", userId],
-  options: ["loan-options"],
+  options: ["loan-options", "expanded-products-v2"],
 };
 const check = (error) => {
   if (error) throw error;

@@ -19,11 +19,11 @@ import { submitAccountDepositRequest } from "./depositService.js";
 const methodContent = {
   cheque: {
     description:
-      "Upload a clear image or PDF of your cheque for review before it is credited.",
-    formTitle: "Deposit a cheque",
+      "Upload a clear image or PDF of your check for review before it is credited.",
+    formTitle: "Make a Check Deposit",
     successDescription:
-      "Your cheque has been submitted for review. We’ll notify you when it is approved.",
-    successTitle: "Cheque deposit submitted",
+      "Your check has been submitted for review. We’ll notify you when it is approved.",
+    successTitle: "Check Deposit submitted",
   },
   direct_deposit: {
     description:
@@ -125,7 +125,7 @@ function AccountDepositDialog({
                   {method === "wire_ach"
                     ? "Wire / ACH review"
                     : method === "cheque"
-                      ? "Cheque verification"
+                      ? "Check Deposit verification"
                       : "Direct Deposit"}
                 </strong>
                 {method === "direct_deposit" ? (
@@ -153,7 +153,7 @@ function AccountDepositDialog({
                   </p>
                 ) : (
                   <p className="text-body-medium mt-2 text-[var(--color-text-secondary)]">
-                    {chequeFile?.name || "Your uploaded cheque"} will be
+                    {chequeFile?.name || "Your uploaded check"} will be
                     verified before the deposit is credited to your account.
                   </p>
                 )}
@@ -287,7 +287,7 @@ function AccountDepositDialog({
 
                 {method === "cheque" && (
                   <div>
-                    <p className="text-body-medium mb-2">Cheque image</p>
+                    <p className="text-body-medium mb-2">Check image</p>
                     <FileUpload
                       allowedExtensions={["jpg", "jpeg", "png", "pdf"]}
                       maxBytes={10 * 1024 * 1024}

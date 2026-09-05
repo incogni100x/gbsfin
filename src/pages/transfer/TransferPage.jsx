@@ -34,7 +34,13 @@ export default function TransferPage() {
   const { data: linkedAccounts = [] } = useQuery({ enabled, queryFn: getLinkedAccounts, queryKey: linkedAccountsQueryKey(user?.id), staleTime: 30_000 });
   const { data: bankTransfers = [] } = useQuery({ enabled, queryFn: () => getBankTransfers(user.id), queryKey: bankTransfersQueryKey(user?.id), staleTime: 15_000 });
   const { data: currencyTransfers = [] } = useQuery({ enabled, queryFn: () => getCurrencyTransfers(user.id), queryKey: currencyTransfersQueryKey(user?.id), staleTime: 15_000 });
-  const enabledCurrencies = currencies.filter((currency) => currency.isEnabled);
+  const enabledCurrencies = currencies.filter(
+    (currency) =>
+      currency.isEnabled &&
+      currency.currency_kind === "fiat" &&
+      currency.code !== "USD",
+  );
+  const usdAccounts = accounts.filter((account) => account.currency === "USD");
 
   return <section>
     <PageHeader title="Transfers" description="Move money between bank accounts, convert currencies, or transfer a currency balance to an external recipient." />
@@ -52,11 +58,11 @@ export default function TransferPage() {
 
     <section className="mt-8" aria-labelledby="currency-balances-heading">
       <h2 className="text-title-3-medium sm:text-title-2-medium" id="currency-balances-heading">Currency balances</h2>
-      <p className="text-body-2-medium mt-1 mb-4 text-[var(--color-text-secondary)]">Convert between enabled currencies, or transfer directly to the recipient details used in that currency.</p>
+      <p className="text-body-2-medium mt-1 mb-4 text-[var(--color-text-secondary)]">Convert an enabled currency into another currency balance or one of your USD bank accounts.</p>
       {error ? <p className="text-body-medium text-[var(--color-text-error-primary)]">{error.message || "Unable to load your currency balances."}</p> : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isPending ? Array.from({ length: 6 }, (_, index) => <CurrencyCardSkeleton key={index} />) : enabledCurrencies.map((currency) => <LayerCard className="w-full !bg-[var(--color-background-primary-default)] text-[var(--color-text-primary)] ring-[var(--color-separator-border)]" key={currency.code}>
           <LayerCard.Secondary className="!bg-[var(--color-background-secondary-default)] px-4 py-3 text-[var(--color-text-secondary)]"><span className="text-body-medium">{currency.code}</span></LayerCard.Secondary>
-          <LayerCard.Primary className="!bg-[var(--color-background-primary-default)] px-4 py-4 ring-[var(--color-separator-border)]"><strong className="financial-number text-title-2-medium">{currency.symbol} {currency.balance.toLocaleString("en", { maximumFractionDigits: currency.currency_kind === "stablecoin" ? 6 : 2, minimumFractionDigits: 2 })}</strong><span className="text-body-2-medium text-[var(--color-text-secondary)]">{currency.name}</span><div className="mt-3 flex flex-wrap gap-2"><CurrencyConversionDialog availableCurrencies={enabledCurrencies} currency={currency} /><CurrencyTransferDialog currency={currency} /></div></LayerCard.Primary>
+          <LayerCard.Primary className="!bg-[var(--color-background-primary-default)] px-4 py-4 ring-[var(--color-separator-border)]"><strong className="financial-number text-title-2-medium">{currency.symbol} {currency.balance.toLocaleString("en", { maximumFractionDigits: 2, minimumFractionDigits: 2 })}</strong><span className="text-body-2-medium text-[var(--color-text-secondary)]">{currency.name}</span><div className="mt-3 flex flex-wrap gap-2"><CurrencyConversionDialog accounts={usdAccounts} availableCurrencies={enabledCurrencies} currency={currency} /><CurrencyTransferDialog currency={currency} /></div></LayerCard.Primary>
         </LayerCard>)}
       </div>}
     </section>

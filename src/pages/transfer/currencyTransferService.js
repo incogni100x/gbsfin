@@ -8,10 +8,18 @@ export const currencyTransfersQueryKey = (userId) => ["currency-transfers", user
 export const bankTransfersQueryKey = (userId) => ["bank-transfers", userId];
 export const beneficiariesQueryKey = (userId) => ["bank-beneficiaries", userId];
 
-export async function createCurrencyConversion({ amount, destinationCurrencyCode, sourceCurrencyCode }) {
+export async function createCurrencyConversion({
+  amount,
+  destinationAccountId,
+  destinationCurrencyCode,
+  destinationType,
+  sourceCurrencyCode,
+}) {
   const { data, error } = await requireSupabase().rpc("convert_currency_balance", {
     p_amount: Number(amount),
+    p_destination_account_id: destinationAccountId || null,
     p_destination_currency_code: destinationCurrencyCode,
+    p_destination_type: destinationType,
     p_source_currency_code: sourceCurrencyCode,
   });
   throwIfError(error);

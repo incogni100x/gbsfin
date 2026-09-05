@@ -36,15 +36,15 @@ const depositMethods = [
     method: "direct_deposit",
   },
   {
-    description: "Upload a cheque for verification and approval.",
+    description: "Upload a check for verification and approval.",
     icon: Invoice03Icon,
-    label: "Cheque Deposit",
+    label: "Check Deposit",
     method: "cheque",
   },
 ];
 
 const methodLabels = {
-  cheque: "Cheque Deposit",
+  cheque: "Check Deposit",
   direct_deposit: "Direct Deposit",
   wire_ach: "Wire / ACH",
 };
