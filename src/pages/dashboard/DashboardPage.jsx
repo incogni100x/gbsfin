@@ -6,7 +6,7 @@ import {
   ShieldCheckIcon,
   Wallet02Icon,
 } from "@hugeicons/core-free-icons";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/auth/useAuth.js";
 import PageHeader from "@/components/ui/PageHeader.jsx";
 import { Link } from "react-router";
@@ -21,8 +21,10 @@ import {
 } from "./dashboardService.js";
 import {
   depositOverviewQueryKey,
+  depositHistoryQueryKey,
   getDepositOverview,
 } from "../deposit/depositService.js";
+import DepositInstructionsDialog from "../deposit/DepositInstructionsDialog.jsx";
 
 function formatBalance(balance, currency) {
   return new Intl.NumberFormat("en-NG", {
@@ -87,6 +89,7 @@ function AccountNotice({ children, icon, title }) {
 
 function DashboardPage() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const {
     data: accounts = [],
     error,
@@ -120,6 +123,19 @@ function DashboardPage() {
       currency.currency_kind === "fiat" &&
       currency.code !== "USD",
   );
+  const refreshCurrencyDeposits = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: depositOverviewQueryKey(user?.id),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: depositHistoryQueryKey(user?.id),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: transactionsQueryKey(user?.id, 3),
+      }),
+    ]);
+  };
 
   return (
     <section className="mt-0 md:-mt-4">
@@ -236,6 +252,12 @@ function DashboardPage() {
                   <strong className="financial-number text-title-2-medium sm:text-title-1-medium">
                     {formatBalance(currency.balance, currency.code)}
                   </strong>
+                  <div className="mt-3">
+                    <DepositInstructionsDialog
+                      currency={currency}
+                      onSubmitted={refreshCurrencyDeposits}
+                    />
+                  </div>
                 </LayerCard.Primary>
               </LayerCard>
             ))}

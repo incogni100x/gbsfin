@@ -217,7 +217,7 @@ function DepositPage() {
         onSubmitted={refreshDeposits}
       />
 
-      <CurrencyDepositSection onSubmitted={refreshDeposits} />
+      <CurrencyDepositSection />
 
       <section className="mt-8" aria-labelledby="deposit-history-heading">
         <h2

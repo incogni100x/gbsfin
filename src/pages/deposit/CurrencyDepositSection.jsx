@@ -3,7 +3,6 @@ import { Badge } from "@/components/base/badges/badge";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import CurrencyApplicationOverlay from "./CurrencyApplicationOverlay.jsx";
-import DepositInstructionsDialog from "./DepositInstructionsDialog.jsx";
 import {
   depositOverviewQueryKey,
   getDepositOverview,
@@ -48,7 +47,7 @@ function orderCurrencies(currencies) {
   });
 }
 
-function CurrencyDepositSection({ onSubmitted }) {
+function CurrencyDepositSection() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const currencies = useQuery({
@@ -65,18 +64,30 @@ function CurrencyDepositSection({ onSubmitted }) {
         queryKey: depositOverviewQueryKey(user?.id),
       }),
   });
+  const unavailableCurrencies = orderCurrencies(
+    (currencies.data || []).filter(
+      (currency) =>
+        !currency.isEnabled &&
+        currency.currency_kind === "fiat" &&
+        currency.code !== "USD",
+    ),
+  );
 
   return (
-    <section className="mt-8" aria-labelledby="currency-deposits-heading">
+    <section
+      aria-labelledby="currency-deposits-heading"
+      className="mt-8"
+      id="currency-balances"
+    >
       <div className="mb-4">
         <h2
           className="text-title-3-medium sm:text-title-2-medium"
           id="currency-deposits-heading"
         >
-          Currency deposits
+          Add a currency
         </h2>
         <p className="text-body-2-medium mt-1 text-[var(--color-text-secondary)]">
-          Deposit into an enabled fiat currency balance.
+          Request access to another fiat currency balance.
         </p>
       </div>
 
@@ -84,69 +95,60 @@ function CurrencyDepositSection({ onSubmitted }) {
         <p className="text-body-medium text-[var(--color-text-error-primary)]">
           {currencies.error.message || "Unable to load your currency balances."}
         </p>
+      ) : currencies.isPending ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }, (_, index) => (
+              <CurrencyCardSkeleton key={index} />
+            ))}
+          </div>
+      ) : unavailableCurrencies.length === 0 ? (
+          <p className="text-body-medium text-[var(--color-text-secondary)]">
+            All available currencies are already enabled.
+          </p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {currencies.isPending
-            ? Array.from({ length: 6 }, (_, index) => (
-                <CurrencyCardSkeleton key={index} />
-              ))
-            : orderCurrencies(
-                currencies.data.filter(
-                  (currency) =>
-                    currency.currency_kind === "fiat" &&
-                    currency.code !== "USD",
-                ),
-              ).map((currency) => (
-                <LayerCard
-                  className="w-full !bg-[var(--color-background-primary-default)] text-[var(--color-text-primary)] ring-[var(--color-separator-border)]"
-                  key={currency.code}
-                >
-                  <LayerCard.Secondary className="!bg-[var(--color-background-secondary-default)] px-4 py-3 text-[var(--color-text-secondary)]">
-                    <span className="text-body-medium">{currency.code}</span>
-                    {!currency.isEnabled && (
-                      <Badge
-                        className={
-                          currency.request?.status === "rejected"
-                            ? "bg-[var(--color-background-tertiary-error)] text-[var(--color-text-error-primary)]"
-                            : undefined
-                        }
-                        color="neutral"
-                      >
-                        {currency.request?.status === "pending"
-                          ? "Pending"
-                          : currency.request?.status === "rejected"
-                            ? "Rejected"
-                            : "Not enabled"}
-                      </Badge>
-                    )}
-                  </LayerCard.Secondary>
-                  <LayerCard.Primary className="!bg-[var(--color-background-primary-default)] px-4 py-4 ring-[var(--color-separator-border)]">
-                    <strong className="financial-number text-title-2-medium">
-                      {formatBalance(currency.balance, currency)}
-                    </strong>
-                    <span className="text-body-2-medium text-[var(--color-text-secondary)]">
-                      {currency.name}
-                    </span>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {currency.isEnabled ? (
-                        <DepositInstructionsDialog
-                          currency={currency}
-                          onSubmitted={onSubmitted}
-                        />
-                      ) : (
-                        <CurrencyApplicationOverlay
-                          currency={currency}
-                          onRequest={(currencyCode) =>
-                            accessRequest.mutateAsync(currencyCode)
-                          }
-                          requestStatus={currency.request?.status}
-                        />
-                      )}
-                    </div>
-                  </LayerCard.Primary>
-                </LayerCard>
-              ))}
-        </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {unavailableCurrencies.map((currency) => (
+              <LayerCard
+                className="w-full !bg-[var(--color-background-primary-default)] text-[var(--color-text-primary)] ring-[var(--color-separator-border)]"
+                key={currency.code}
+              >
+                <LayerCard.Secondary className="!bg-[var(--color-background-secondary-default)] px-4 py-3 text-[var(--color-text-secondary)]">
+                  <span className="text-body-medium">{currency.code}</span>
+                  <Badge
+                    className={
+                      currency.request?.status === "rejected"
+                        ? "bg-[var(--color-background-tertiary-error)] text-[var(--color-text-error-primary)]"
+                        : undefined
+                    }
+                    color="neutral"
+                  >
+                    {currency.request?.status === "pending"
+                      ? "Pending"
+                      : currency.request?.status === "rejected"
+                        ? "Rejected"
+                        : "Not enabled"}
+                  </Badge>
+                </LayerCard.Secondary>
+                <LayerCard.Primary className="!bg-[var(--color-background-primary-default)] px-4 py-4 ring-[var(--color-separator-border)]">
+                  <strong className="financial-number text-title-2-medium">
+                    {formatBalance(currency.balance, currency)}
+                  </strong>
+                  <span className="text-body-2-medium text-[var(--color-text-secondary)]">
+                    {currency.name}
+                  </span>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <CurrencyApplicationOverlay
+                      currency={currency}
+                      onRequest={(currencyCode) =>
+                        accessRequest.mutateAsync(currencyCode)
+                      }
+                      requestStatus={currency.request?.status}
+                    />
+                  </div>
+                </LayerCard.Primary>
+              </LayerCard>
+            ))}
+          </div>
       )}
     </section>
   );

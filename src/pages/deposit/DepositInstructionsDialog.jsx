@@ -1,11 +1,7 @@
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
 import { Select, SelectItem } from "@/components/base/select/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -37,13 +33,16 @@ function DepositInstructionsDialog({ accounts = [], currency, onSubmitted }) {
   );
   const [step, setStep] = useState("form");
   const [submitting, setSubmitting] = useState(false);
-  const { data: instructions = [], error: instructionsError, isPending } =
-    useQuery({
-      enabled: open,
-      queryFn: () => getDepositInstructions(currency.code),
-      queryKey: depositInstructionsQueryKey(currency.code),
-      staleTime: 10 * 60 * 1000,
-    });
+  const {
+    data: instructions = [],
+    error: instructionsError,
+    isPending,
+  } = useQuery({
+    enabled: open,
+    queryFn: () => getDepositInstructions(currency.code),
+    queryKey: depositInstructionsQueryKey(currency.code),
+    staleTime: 10 * 60 * 1000,
+  });
   const instruction = instructions[0];
   const isCryptoDeposit = currency.currency_kind === "stablecoin";
 
@@ -67,7 +66,9 @@ function DepositInstructionsDialog({ accounts = [], currency, onSubmitted }) {
     setError("");
 
     if (!instruction?.id) {
-      setError("Deposit processing is temporarily unavailable. Please try again.");
+      setError(
+        "Deposit processing is temporarily unavailable. Please try again.",
+      );
       return;
     }
 
@@ -165,7 +166,8 @@ function DepositInstructionsDialog({ accounts = [], currency, onSubmitted }) {
                         Account to credit
                       </span>
                       <strong className="text-body-medium text-right">
-                        {usdAccounts.find((account) => account.id === accountId)?.name || "USD Account"}
+                        {usdAccounts.find((account) => account.id === accountId)
+                          ?.name || "USD Account"}
                       </strong>
                     </div>
                     <div className="flex items-center justify-between gap-4 border-t border-[var(--color-separator-border)] pt-3">
@@ -273,7 +275,8 @@ function DepositInstructionsDialog({ accounts = [], currency, onSubmitted }) {
               )}
               {isCryptoDeposit && !usdAccounts.length && (
                 <p className="text-body-2-medium mt-3 text-[var(--color-text-error-primary)]">
-                  You need a USD bank account before making a stablecoin deposit.
+                  You need a USD bank account before making a stablecoin
+                  deposit.
                 </p>
               )}
               {error && (
@@ -298,7 +301,8 @@ function DepositInstructionsDialog({ accounts = [], currency, onSubmitted }) {
                 </div>
               ) : instructionsError ? (
                 <p className="text-body-medium mt-5 text-[var(--color-text-error-primary)]">
-                  {instructionsError.message || "Unable to load deposit details."}
+                  {instructionsError.message ||
+                    "Unable to load deposit details."}
                 </p>
               ) : !instruction ? (
                 <p className="text-body-medium mt-5 text-[var(--color-text-secondary)]">

@@ -96,8 +96,7 @@ function RegisterPage() {
   const hasThreeSecurityAnswers =
     securityAnswers.every(
       (item) => item.questionId && item.answer.trim().length >= 2,
-    ) &&
-    new Set(securityAnswers.map((item) => item.questionId)).size === 3;
+    ) && new Set(securityAnswers.map((item) => item.questionId)).size === 3;
 
   const validateStep = () => {
     if (currentStep === 0) {
@@ -143,7 +142,10 @@ function RegisterPage() {
       }
     }
 
-    if (currentStep === 5 && (!documents.id || !documents.residence || !documents.selfie)) {
+    if (
+      currentStep === 5 &&
+      (!documents.id || !documents.residence || !documents.selfie)
+    ) {
       throw new Error("Upload your ID, proof of address, and a selfie.");
     }
   };
@@ -399,11 +401,7 @@ function RegisterPage() {
                     <Select
                       aria-label={`Security question ${index + 1}`}
                       onSelectionChange={(key) =>
-                        updateSecurityAnswer(
-                          index,
-                          "questionId",
-                          String(key),
-                        )
+                        updateSecurityAnswer(index, "questionId", String(key))
                       }
                       selectedKey={selectedAnswer.questionId || undefined}
                     >
@@ -439,9 +437,7 @@ function RegisterPage() {
             {currentStep === 5 && (
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 <div>
-                  <h3 className="text-headline-medium">
-                    Government-issued ID
-                  </h3>
+                  <h3 className="text-headline-medium">Government-issued ID</h3>
                   <p className="text-body-2-medium mb-3 text-[var(--color-text-secondary)]">
                     Upload a passport, driver&apos;s licence, or national ID.
                   </p>
