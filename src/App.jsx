@@ -12,6 +12,8 @@ import LoansPage from "./pages/loans/LoansPage.jsx";
 import ContactPage from "./pages/marketing/contact/ContactPage.jsx";
 import HomePage from "./pages/marketing/home/HomePage.jsx";
 import LegalPage from "./pages/marketing/legal/LegalPage.jsx";
+import PrivacyPolicyPage from "./pages/marketing/privacy/PrivacyPolicyPage.jsx";
+import TermsPage from "./pages/marketing/terms/TermsPage.jsx";
 import LinkedAccountsPage from "./pages/linked-accounts/LinkedAccountsPage.jsx";
 import NotFoundPage from "./pages/not-found/NotFoundPage.jsx";
 import ProfilePage from "./pages/profile/ProfilePage.jsx";
@@ -28,6 +30,8 @@ function App() {
           <Route index element={<HomePage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/legal" element={<LegalPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />

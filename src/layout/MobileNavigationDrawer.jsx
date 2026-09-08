@@ -64,10 +64,12 @@ function MobileNavigationDrawer({ navigationItems }) {
                   </NavLink>
                 ))}
                 <div className="my-2 h-px bg-[var(--color-separator-border)]" />
-                <NavLink
+                <a
                   className="text-headline-medium flex items-center gap-3 rounded-md px-3 py-3 text-[var(--color-text-secondary)] no-underline"
                   onClick={() => setOpen(false)}
-                  to="/contact"
+                  href="/contact"
+                  rel="noopener noreferrer"
+                  target="_blank"
                 >
                   <HugeiconsIcon
                     aria-hidden="true"
@@ -76,7 +78,7 @@ function MobileNavigationDrawer({ navigationItems }) {
                     strokeWidth={1.75}
                   />
                   Help and support
-                </NavLink>
+                </a>
                 <NavLink
                   className={({ isActive }) =>
                     `text-headline-medium flex items-center gap-3 rounded-md px-3 py-3 no-underline ${

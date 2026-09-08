@@ -1,5 +1,6 @@
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
+//import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
@@ -25,7 +26,7 @@ const persistedQueryRoots = new Set([
   "loan-options",
 ]);
 
-const queryClientPersister = createSyncStoragePersister({
+const queryClientPersister = createAsyncStoragePersister({
   key: QUERY_CACHE_KEY,
   storage: window.sessionStorage,
 });

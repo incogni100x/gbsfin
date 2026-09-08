@@ -1,14 +1,36 @@
 import { useState } from "react";
 import { Button } from "@/components/base/buttons/button.tsx";
 import { Input } from "@/components/base/input/input.tsx";
+import FeedbackMessage from "@/components/ui/FeedbackMessage.jsx";
+import { sendContactMessage } from "./contactService.js";
 
 function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    event.currentTarget.reset();
-    setSubmitted(true);
+    const form = event.currentTarget;
+    const values = Object.fromEntries(new FormData(form));
+
+    setError("");
+    setSubmitted(false);
+    setSubmitting(true);
+
+    try {
+      await sendContactMessage(values);
+      form.reset();
+      setSubmitted(true);
+    } catch (submissionError) {
+      setError(
+        submissionError instanceof Error
+          ? submissionError.message
+          : "Your message could not be sent. Please try again.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -59,14 +81,23 @@ function ContactPage() {
               </p>
             </div>
 
-            {submitted && (
-              <p
-                className="text-body-medium text-[var(--color-state-success-text)]"
-                role="status"
-              >
-                Thanks for getting in touch. Your message has been received.
-              </p>
-            )}
+            <FeedbackMessage>
+              {submitted
+                ? "Thanks for getting in touch. Your message has been sent."
+                : ""}
+            </FeedbackMessage>
+            <FeedbackMessage tone="error">{error}</FeedbackMessage>
+
+            <div aria-hidden="true" className="absolute -left-[9999px]">
+              <label htmlFor="contact-website">Website</label>
+              <input
+                autoComplete="off"
+                id="contact-website"
+                name="website"
+                tabIndex={-1}
+                type="text"
+              />
+            </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
               <Input
@@ -113,8 +144,12 @@ function ContactPage() {
                 required
               />
             </div>
-            <Button className="w-full sm:w-auto sm:self-start" type="submit">
-              Send message
+            <Button
+              className="w-full sm:w-auto sm:self-start"
+              disabled={submitting}
+              type="submit"
+            >
+              {submitting ? "Sending…" : "Send message"}
             </Button>
           </div>
         </form>

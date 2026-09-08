@@ -18,7 +18,11 @@ const footerGroups = [
     title: "Account",
   },
   {
-    links: [{ label: "Legal", to: "/legal" }],
+    links: [
+      { label: "Legal", to: "/legal" },
+      { label: "Privacy policy", to: "/privacy" },
+      { label: "Terms and conditions", to: "/terms" },
+    ],
     title: "Legal",
   },
 ];

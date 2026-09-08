@@ -24,10 +24,12 @@ function DashboardHeaderActions() {
 
   return (
     <div className="flex items-center gap-2">
-      <NavLink
+      <a
         aria-label="Help and support"
         className={actionClassName}
-        to="/contact"
+        href="/contact"
+        rel="noopener noreferrer"
+        target="_blank"
       >
         <HugeiconsIcon
           aria-hidden="true"
@@ -36,7 +38,7 @@ function DashboardHeaderActions() {
           strokeWidth={1.75}
         />
         <span>Help and support</span>
-      </NavLink>
+      </a>
 
       <NotificationPopover />
 

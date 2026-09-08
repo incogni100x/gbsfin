@@ -448,3 +448,8 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/process-loan-payments/deno.json"
 entrypoint = "./functions/process-loan-payments/index.ts"
+
+[functions.send-contact-message]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/send-contact-message/index.ts"
