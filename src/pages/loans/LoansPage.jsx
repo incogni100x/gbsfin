@@ -37,6 +37,7 @@ import {
   loanKeys,
   requestLoan,
 } from "./loanService.js";
+import LoanPaymentDialog from "./LoanPaymentDialog.jsx";
 
 const money = (value) =>
   Number(value || 0).toLocaleString("en-US", {
@@ -60,7 +61,7 @@ function StatCard({ detail, label, value }) {
     </LayerCard>
   );
 }
-function LoanTable({ loans, title }) {
+function LoanTable({ loans, onPayment, title }) {
   return (
     <section>
       <h2 className="text-title-3-medium mb-4 sm:text-title-2-medium">
@@ -78,6 +79,7 @@ function LoanTable({ loans, title }) {
           <TableColumn>Term</TableColumn>
           <TableColumn>Monthly payment</TableColumn>
           <TableColumn>Status</TableColumn>
+          {onPayment ? <TableColumn>Action</TableColumn> : null}
         </TableHeader>
         <TableBody>
           {loans.length ? (
@@ -95,11 +97,18 @@ function LoanTable({ loans, title }) {
                     {loan.status}
                   </Badge>
                 </TableCell>
+                {onPayment ? (
+                  <TableCell>
+                    <Button size="small" onClick={() => onPayment(loan)}>
+                      Make payment
+                    </Button>
+                  </TableCell>
+                ) : null}
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={6}>
+              <TableCell colSpan={onPayment ? 7 : 6}>
                 <div className="py-8 text-center">
                   <span className="text-headline-medium">No records yet</span>
                   <p className="text-body-2-medium mt-1 text-[var(--color-text-secondary)]">
@@ -125,6 +134,7 @@ export default function LoansPage() {
   const [reason, setReason] = useState("");
   const [confirming, setConfirming] = useState(false);
   const [requestSubmitted, setRequestSubmitted] = useState(false);
+  const [payingLoan, setPayingLoan] = useState(null);
   const [message, setMessage] = useState("");
   const {
     data: options = { types: [], plans: [], purposes: [], partners: [] },
@@ -363,9 +373,21 @@ export default function LoansPage() {
         </p>
       )}
       <div className="mt-8 grid gap-8">
-        <LoanTable loans={active} title="Active loans" />
+        <LoanTable
+          loans={active}
+          onPayment={setPayingLoan}
+          title="Active loans"
+        />
         <LoanTable loans={pending} title="Pending loans" />
       </div>
+      {payingLoan ? (
+        <LoanPaymentDialog
+          accounts={accounts}
+          loan={payingLoan}
+          onClose={() => setPayingLoan(null)}
+          userId={user?.id}
+        />
+      ) : null}
       <Dialog open={confirming} onOpenChange={setConfirming}>
         <DialogContent className="gap-6 sm:max-w-lg sm:p-7">
           <DialogHeader className="gap-2 pr-6 text-left">

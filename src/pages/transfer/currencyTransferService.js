@@ -26,6 +26,28 @@ export async function createCurrencyConversion({
   return { ...data, destination_amount: Number(data.destination_amount), exchange_rate: Number(data.exchange_rate), source_amount: Number(data.source_amount) };
 }
 
+export async function createCheckingCurrencyConversion({
+  amount,
+  destinationCurrencyCode,
+  sourceAccountId,
+}) {
+  const { data, error } = await requireSupabase().rpc(
+    "convert_checking_account_balance",
+    {
+      p_amount: Number(amount),
+      p_destination_currency_code: destinationCurrencyCode,
+      p_source_account_id: sourceAccountId,
+    },
+  );
+  throwIfError(error);
+  return {
+    ...data,
+    destination_amount: Number(data.destination_amount),
+    exchange_rate: Number(data.exchange_rate),
+    source_amount: Number(data.source_amount),
+  };
+}
+
 export async function requestCurrencyTransfer({ amount, currencyCode, details }) {
   const { data, error } = await requireSupabase().rpc("request_currency_transfer", {
     p_account_holder_name: details.accountHolderName || null,

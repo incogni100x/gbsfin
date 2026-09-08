@@ -129,7 +129,7 @@ export async function getTransactions(userId, { limit = 200 } = {}) {
     currency_code: conversion.source_currency_code,
     description:
       conversion.destination_type === "currency_balance_from_bank"
-        ? "Bank account to USD balance"
+        ? `Checking account to ${conversion.destination_currency_code}`
         : `${conversion.source_currency_code} to ${conversion.destination_currency_code}`,
     direction: "debit",
     id: `conversion-${conversion.id}`,

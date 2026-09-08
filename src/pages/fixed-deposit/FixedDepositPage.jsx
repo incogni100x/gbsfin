@@ -231,7 +231,6 @@ export default function FixedDepositPage() {
       return setMessage("Enter an amount, term, and funding account.");
     setConfirmingDeposit(true);
   };
-  const penalty = (closing?.accruedProfit || 0) * 0.055;
   if (ratesPending || accountsPending || depositsPending) {
     return (
       <section>
@@ -484,27 +483,9 @@ export default function FixedDepositPage() {
                   {money(closing?.amount)}
                 </span>
               </p>
-              <p className="text-body-medium flex items-center justify-between gap-4">
-                <span>Interest Earned</span>
-                <span className="financial-number text-body-medium">
-                  {money(closing?.accruedProfit)}
-                </span>
-              </p>
               <p className="text-body-medium flex items-center justify-between gap-4 text-[var(--color-text-error-primary)]">
                 <span>Penalty</span>
-                <span className="financial-number text-body-medium">
-                  -{money(penalty)}
-                </span>
-              </p>
-              <p className="text-body-medium flex items-center justify-between gap-4 border-t border-[var(--color-separator-border)] pt-3">
-                <span>Estimated payout</span>
-                <span className="financial-number text-body-medium">
-                  {money(
-                    (closing?.amount || 0) +
-                      (closing?.accruedProfit || 0) -
-                      penalty,
-                  )}
-                </span>
+                <span className="financial-number text-body-medium">5.5%</span>
               </p>
             </div>
           </div>
@@ -558,13 +539,13 @@ export default function FixedDepositPage() {
                 </p>
                 <p className="text-body-medium flex items-center justify-between gap-4 border-t border-[var(--color-separator-border)] pt-3">
                   <span>Total Payout</span>
-                  <span className="text-body-medium">
+                  <strong className="text-headline-medium">
                     {money(
                       (closureConfirmation?.amount || 0) +
                         (closureConfirmation?.accruedProfit || 0) -
                         (closureConfirmation?.accruedProfit || 0) * 0.055,
                     )}
-                  </span>
+                  </strong>
                 </p>
                 <p className="text-body-medium flex items-center justify-between gap-4">
                   <span>Status</span>

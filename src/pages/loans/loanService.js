@@ -3,6 +3,7 @@ import { requireSupabase } from "@/lib/supabase/client.js";
 export const loanKeys = {
   all: (userId) => ["loans", userId],
   options: ["loan-options", "expanded-products-v2"],
+  paymentRates: ["loan-payment-rates"],
 };
 const check = (error) => {
   if (error) throw error;
@@ -54,7 +55,7 @@ export async function getLoans(userId) {
   const { data, error } = await requireSupabase()
     .from("loans")
     .select(
-      "id, amount, reason, status, annual_interest_rate, duration_months, monthly_payment, remaining_balance, remaining_months, next_due_date, overdue_amount, created_at, user_accounts(account_number, account_types(name)), loan_types(name)",
+      "id, account_id, amount, reason, status, annual_interest_rate, duration_months, monthly_payment, remaining_balance, remaining_months, next_due_date, overdue_amount, created_at, user_accounts(account_number, account_types(name)), loan_types(name)",
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
@@ -66,6 +67,36 @@ export async function getLoans(userId) {
     remaining_balance: Number(row.remaining_balance),
     overdue_amount: Number(row.overdue_amount),
   }));
+}
+
+export async function getLoanPaymentRates() {
+  const { data, error } = await requireSupabase()
+    .from("exchange_rates")
+    .select("quote_currency_code, rate, effective_at")
+    .eq("base_currency_code", "USD");
+  check(error);
+  return Object.fromEntries(
+    data.map((item) => [
+      item.quote_currency_code,
+      { effectiveAt: item.effective_at, rate: Number(item.rate) },
+    ]),
+  );
+}
+
+export async function makeLoanPayment({
+  amount,
+  idempotencyKey,
+  loanId,
+  sourceAccountId,
+}) {
+  const { data, error } = await requireSupabase().rpc("make_loan_payment", {
+    p_amount: amount,
+    p_idempotency_key: idempotencyKey,
+    p_loan_id: loanId,
+    p_source_account_id: sourceAccountId,
+  });
+  check(error);
+  return data;
 }
 
 export async function requestLoan({

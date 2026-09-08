@@ -55,6 +55,7 @@ function RegisterPage() {
   const { refreshVerification } = useAuth();
   const [accountTypeIds, setAccountTypeIds] = useState([]);
   const [accountTypes, setAccountTypes] = useState([]);
+  const [checkingAccountTypeId, setCheckingAccountTypeId] = useState("");
   const [complete, setComplete] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [details, setDetails] = useState(emptyDetails);
@@ -86,6 +87,8 @@ function RegisterPage() {
 
   const updateAccountSelection = (accountTypeId, isSelected) => {
     setError("");
+
+    if (accountTypeId === checkingAccountTypeId) return;
 
     if (isSelected && accountTypeIds.length >= 3) {
       setError("You can choose exactly three account types.");
@@ -132,8 +135,12 @@ function RegisterPage() {
       }
     }
 
-    if (currentStep === 3 && accountTypeIds.length !== 3) {
-      throw new Error("Choose exactly three account types.");
+    if (
+      currentStep === 3 &&
+      (accountTypeIds.length !== 3 ||
+        !accountTypeIds.includes(checkingAccountTypeId))
+    ) {
+      throw new Error("Keep Checking selected and choose two other accounts.");
     }
 
     if (currentStep === 4 && !hasThreeSecurityAnswers) {
@@ -166,7 +173,17 @@ function RegisterPage() {
       } else if (currentStep === 1) {
         await verifySignupCode(details.email, otp);
         const options = await loadRegistrationOptions();
+        const checkingAccountType = options.accountTypes.find(
+          (accountType) => accountType.name.trim().toLowerCase() === "checking",
+        );
+
+        if (!checkingAccountType) {
+          throw new Error("The required Checking account is unavailable.");
+        }
+
         setAccountTypes(options.accountTypes);
+        setCheckingAccountTypeId(String(checkingAccountType.id));
+        setAccountTypeIds([String(checkingAccountType.id)]);
         setSecurityQuestions(options.securityQuestions);
         setCurrentStep(2);
       } else if (currentStep === 2) {
@@ -284,6 +301,7 @@ function RegisterPage() {
                 accountTypeIds={accountTypeIds}
                 accountTypes={accountTypes}
                 onSelectionChange={updateAccountSelection}
+                requiredAccountTypeId={checkingAccountTypeId}
               />
             )}
             {currentStep === 4 && (
@@ -319,7 +337,9 @@ function RegisterPage() {
                 disabled={
                   loading ||
                   (currentStep === 1 && otp.length !== 6) ||
-                  (currentStep === 3 && accountTypeIds.length !== 3) ||
+                  (currentStep === 3 &&
+                    (accountTypeIds.length !== 3 ||
+                      !accountTypeIds.includes(checkingAccountTypeId))) ||
                   (currentStep === 4 && !hasThreeSecurityAnswers)
                 }
                 type="submit"

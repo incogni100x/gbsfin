@@ -9,7 +9,7 @@ create temporary table tap_results (
 grant select, insert on tap_results to authenticated;
 
 insert into tap_results (result)
-select plan(15);
+select plan(16);
 
 insert into tap_results (result)
 select has_table(
@@ -137,6 +137,13 @@ select throws_like(
   $$select * from public.open_accounts(array[1, 2], 'USD')$$,
   '%Exactly three distinct account types are required%',
   'fewer than three account types cannot be opened'
+);
+
+insert into tap_results (result)
+select throws_like(
+  $$select * from public.open_accounts(array[1, 3, 4], 'USD')$$,
+  '%Checking must be included%',
+  'three account types without Checking cannot be opened'
 );
 
 insert into tap_results (result)
