@@ -58,7 +58,7 @@ function DashboardLayout() {
 
   return (
     <Drawer.Provider>
-      <div className="relative min-h-svh overflow-hidden bg-[var(--color-background-full)]">
+      <div className="relative min-h-svh overflow-x-clip bg-[var(--color-background-full)]">
         <Drawer.IndentBackground className="absolute inset-0 bg-[var(--color-background-full)]" />
         <Drawer.Indent className="relative z-10 min-h-svh origin-top bg-[var(--color-background-full)] transition-[transform,border-radius] duration-200 data-[active]:scale-[0.96] data-[active]:rounded-3xl motion-reduce:transition-none">
           <main className="min-h-svh bg-[var(--color-background-full)] text-[var(--color-text-primary)]">
