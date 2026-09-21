@@ -19,7 +19,9 @@ function ScrollToMarketingHash() {
     const target = document.getElementById(decodeURIComponent(hash.slice(1)));
     if (!target) return;
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     target.scrollIntoView({
       behavior: reduceMotion ? "auto" : "smooth",
       block: "start",
@@ -43,8 +45,11 @@ function MarketingLayout() {
             Global Stripe Fin
           </Link>
 
-          <nav aria-label="Marketing navigation" className="hidden items-center gap-6 md:flex">
-            {navigationItems.map((item) => (
+          <nav
+            aria-label="Marketing navigation"
+            className="hidden items-center gap-6 md:flex"
+          >
+            {navigationItems.map((item) =>
               item.to.includes("#") ? (
                 <Link
                   className="text-body-medium inline-flex min-h-8 items-center px-1 text-[var(--color-text-secondary)] no-underline transition-colors duration-150 hover:text-[var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-border-focus-ring)] motion-reduce:transition-none"
@@ -67,8 +72,8 @@ function MarketingLayout() {
                 >
                   {item.label}
                 </NavLink>
-              )
-            ))}
+              ),
+            )}
           </nav>
 
           <div className="hidden items-center gap-2 md:flex">

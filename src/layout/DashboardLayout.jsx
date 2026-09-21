@@ -64,19 +64,16 @@ function DashboardLayout() {
           <main className="min-h-svh bg-[var(--color-background-full)] text-[var(--color-text-primary)]">
             <div className="bg-[var(--color-background-full)]">
               <header className="sticky top-0 z-30 mx-auto flex min-h-16 w-[calc(100%-3rem)] max-w-[1200px] items-center justify-between bg-[var(--color-background-full)] sm:min-h-[76px] max-sm:w-[calc(100%-2rem)]">
-                <Link className="text-title-2-semibold flex items-center gap-2 text-[var(--color-text-primary)] no-underline" to="/dashboard">
-                  <img
-                    alt=""
-                    className="size-8"
-                    src="/logo.svg"
-                  />
+                <Link
+                  className="text-title-2-semibold flex items-center gap-2 text-[var(--color-text-primary)] no-underline"
+                  to="/dashboard"
+                >
+                  <img alt="" className="size-8" src="/logo.svg" />
                   Global Stripe Fin
                 </Link>
                 <div className="flex items-center gap-1 sm:hidden">
                   <NotificationPopover iconOnly />
-                  <MobileNavigationDrawer
-                    navigationItems={dashboardTabs}
-                  />
+                  <MobileNavigationDrawer navigationItems={dashboardTabs} />
                 </div>
                 <div className="hidden sm:block">
                   <DashboardHeaderActions />
@@ -88,7 +85,9 @@ function DashboardLayout() {
               aria-label="Dashboard sections"
               className="hidden w-full gap-0 bg-[var(--color-background-full)] sm:flex"
               onSelectionChange={(value) => {
-                const selectedTab = dashboardTabs.find((tab) => tab.value === value);
+                const selectedTab = dashboardTabs.find(
+                  (tab) => tab.value === value,
+                );
                 if (selectedTab) navigate(selectedTab.path);
               }}
               {...tabSelectionProps}
