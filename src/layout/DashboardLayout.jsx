@@ -63,7 +63,7 @@ function DashboardLayout() {
         <Drawer.Indent className="relative z-10 min-h-svh origin-top bg-[var(--color-background-full)] transition-[transform,border-radius] duration-200 data-[active]:scale-[0.96] data-[active]:rounded-3xl motion-reduce:transition-none">
           <main className="min-h-svh bg-[var(--color-background-full)] text-[var(--color-text-primary)]">
             <div className="bg-[var(--color-background-full)]">
-              <header className="mx-auto flex min-h-16 w-[calc(100%-3rem)] max-w-[1200px] items-center justify-between sm:min-h-[76px] max-sm:w-[calc(100%-2rem)]">
+              <header className="sticky top-0 z-30 mx-auto flex min-h-16 w-[calc(100%-3rem)] max-w-[1200px] items-center justify-between bg-[var(--color-background-full)] sm:min-h-[76px] max-sm:w-[calc(100%-2rem)]">
                 <Link className="text-title-2-semibold flex items-center gap-2 text-[var(--color-text-primary)] no-underline" to="/dashboard">
                   <img
                     alt=""
