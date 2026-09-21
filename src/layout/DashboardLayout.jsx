@@ -58,29 +58,29 @@ function DashboardLayout() {
 
   return (
     <Drawer.Provider>
-      <div className="relative min-h-svh overflow-x-clip bg-[var(--color-background-full)]">
-        <Drawer.IndentBackground className="absolute inset-0 bg-[var(--color-background-full)]" />
-        <Drawer.Indent className="relative z-10 min-h-svh origin-top bg-[var(--color-background-full)] transition-[transform,border-radius] duration-200 data-[active]:scale-[0.96] data-[active]:rounded-3xl motion-reduce:transition-none">
-          <main className="min-h-svh bg-[var(--color-background-full)] text-[var(--color-text-primary)]">
-            <div className="bg-[var(--color-background-full)]">
-              <header className="sticky top-0 z-30 mx-auto flex min-h-16 w-[calc(100%-3rem)] max-w-[1200px] items-center justify-between bg-[var(--color-background-full)] sm:min-h-[76px] max-sm:w-[calc(100%-2rem)]">
-                <Link
-                  className="text-title-2-semibold flex items-center gap-2 text-[var(--color-text-primary)] no-underline"
-                  to="/dashboard"
-                >
-                  <img alt="" className="size-8" src="/logo.svg" />
-                  Global Stripe Fin
-                </Link>
-                <div className="flex items-center gap-1 sm:hidden">
-                  <NotificationPopover iconOnly />
-                  <MobileNavigationDrawer navigationItems={dashboardTabs} />
-                </div>
-                <div className="hidden sm:block">
-                  <DashboardHeaderActions />
-                </div>
-              </header>
+      <div className="relative min-h-svh bg-[var(--color-background-full)]">
+        <header className="sticky top-0 z-30 bg-[var(--color-background-full)]">
+          <div className="mx-auto flex min-h-16 w-[calc(100%-3rem)] max-w-[1200px] items-center justify-between sm:min-h-[76px] max-sm:w-[calc(100%-2rem)]">
+            <Link
+              className="text-title-2-semibold flex items-center gap-2 text-[var(--color-text-primary)] no-underline"
+              to="/dashboard"
+            >
+              <img alt="" className="size-8" src="/logo.svg" />
+              Global Stripe Fin
+            </Link>
+            <div className="flex items-center gap-1 sm:hidden">
+              <NotificationPopover iconOnly />
+              <MobileNavigationDrawer navigationItems={dashboardTabs} />
             </div>
+            <div className="hidden sm:block">
+              <DashboardHeaderActions />
+            </div>
+          </div>
+        </header>
 
+        <Drawer.IndentBackground className="absolute inset-0 bg-[var(--color-background-full)]" />
+        <Drawer.Indent className="relative z-10 min-h-svh origin-top overflow-x-clip bg-[var(--color-background-full)] transition-[transform,border-radius] duration-200 data-[active]:scale-[0.96] data-[active]:rounded-3xl motion-reduce:transition-none">
+          <main className="min-h-svh bg-[var(--color-background-full)] text-[var(--color-text-primary)]">
             <Tabs
               aria-label="Dashboard sections"
               className="hidden w-full gap-0 bg-[var(--color-background-full)] sm:flex"
