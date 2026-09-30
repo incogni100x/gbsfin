@@ -2,11 +2,15 @@ import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
+import {
+  CheckmarkCircle02Icon,
+  Copy01Icon,
+  CopyCheckIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery } from "@tanstack/react-query";
 import { QRCodeSVG } from "qrcode.react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/auth/useAuth.js";
 import {
   depositInstructionsQueryKey,
@@ -14,9 +18,32 @@ import {
   submitCurrencyDeposit,
 } from "./depositService.js";
 
+function CopyAddressIcon({ className }) {
+  return (
+    <HugeiconsIcon
+      aria-hidden="true"
+      className={className}
+      icon={Copy01Icon}
+      strokeWidth={1.8}
+    />
+  );
+}
+
+function CopiedAddressIcon({ className }) {
+  return (
+    <HugeiconsIcon
+      aria-hidden="true"
+      className={className}
+      icon={CopyCheckIcon}
+      strokeWidth={1.8}
+    />
+  );
+}
+
 function DepositInstructionsDialog({ currency, onSubmitted }) {
   const { profile } = useAuth();
   const [amount, setAmount] = useState("");
+  const [copyState, setCopyState] = useState("idle");
   const [detailsReady, setDetailsReady] = useState(false);
   const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
@@ -25,6 +52,7 @@ function DepositInstructionsDialog({ currency, onSubmitted }) {
   );
   const [step, setStep] = useState("form");
   const [submitting, setSubmitting] = useState(false);
+  const copyResetTimerRef = useRef(null);
   const {
     data: instructions = [],
     error: instructionsError,
@@ -45,12 +73,46 @@ function DepositInstructionsDialog({ currency, onSubmitted }) {
     return () => window.clearTimeout(readyTimer);
   }, [isPending, open, step]);
 
+  useEffect(
+    () => () => {
+      if (copyResetTimerRef.current) {
+        window.clearTimeout(copyResetTimerRef.current);
+      }
+    },
+    [],
+  );
+
+  const resetCopyStateLater = () => {
+    if (copyResetTimerRef.current) {
+      window.clearTimeout(copyResetTimerRef.current);
+    }
+
+    copyResetTimerRef.current = window.setTimeout(() => {
+      setCopyState("idle");
+      copyResetTimerRef.current = null;
+    }, 2200);
+  };
+
+  const copyDepositAddress = async () => {
+    if (!instruction?.wallet_address) return;
+
+    try {
+      await navigator.clipboard.writeText(instruction.wallet_address);
+      setCopyState("copied");
+    } catch {
+      setCopyState("error");
+    }
+
+    resetCopyStateLater();
+  };
+
   const closeDialog = () => {
     setOpen(false);
     setDetailsReady(false);
     setStep("form");
     setAmount("");
     setError("");
+    setCopyState("idle");
   };
 
   const confirmSent = async () => {
@@ -287,6 +349,24 @@ function DepositInstructionsDialog({ currency, onSubmitted }) {
                           <dd className="mt-2 break-all text-body-medium text-[var(--color-text-primary)]">
                             {instruction.wallet_address}
                           </dd>
+                          <Button
+                            aria-live="polite"
+                            className="mt-3"
+                            leadingIcon={
+                              copyState === "copied"
+                                ? CopiedAddressIcon
+                                : CopyAddressIcon
+                            }
+                            onClick={copyDepositAddress}
+                            size="small"
+                            variant="ghost"
+                          >
+                            {copyState === "copied"
+                              ? "Copied"
+                              : copyState === "error"
+                                ? "Copy failed — try again"
+                                : "Copy address"}
+                          </Button>
                         </div>
                       </dl>
                     </div>
