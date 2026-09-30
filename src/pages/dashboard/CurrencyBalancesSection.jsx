@@ -13,10 +13,7 @@ function CurrencyBalancesSection({
   onDepositSubmitted,
 }) {
   const enabledCurrencies = currencies.filter(
-    (currency) =>
-      currency.isEnabled &&
-      currency.currency_kind === "fiat" &&
-      currency.code !== "USD",
+    (currency) => currency.isEnabled && currency.code !== "USD",
   );
 
   return (

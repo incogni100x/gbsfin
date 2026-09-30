@@ -66,10 +66,7 @@ function CurrencyDepositSection() {
   });
   const unavailableCurrencies = orderCurrencies(
     (currencies.data || []).filter(
-      (currency) =>
-        !currency.isEnabled &&
-        currency.currency_kind === "fiat" &&
-        currency.code !== "USD",
+      (currency) => !currency.isEnabled && currency.code !== "USD",
     ),
   );
 
@@ -87,7 +84,7 @@ function CurrencyDepositSection() {
           Add a currency
         </h2>
         <p className="text-body-2-medium mt-1 text-[var(--color-text-secondary)]">
-          Request access to another fiat currency balance.
+          Request access to another fiat or stablecoin balance.
         </p>
       </div>
 

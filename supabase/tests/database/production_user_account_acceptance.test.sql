@@ -30,6 +30,9 @@ create temp table qa_context (
   reverse_conversion_id uuid,
   currency_conversion_id uuid,
   reverse_currency_conversion_id uuid,
+  stablecoin_conversion_id uuid,
+  stablecoin_checking_conversion_id uuid,
+  stablecoin_transfer_reject_id uuid,
   currency_transfer_reject_id uuid,
   currency_transfer_approve_id uuid,
   fixed_deposit_id uuid,
@@ -103,7 +106,7 @@ update qa_context set disposable_linked_id = (select id from inserted);
 delete from public.linked_bank_accounts
 where id = (select disposable_linked_id from qa_context);
 
--- Bank-account deposits: approved, rejected, check, and stablecoin paths.
+-- Bank-account deposits: approved, rejected, and check paths.
 update qa_context set direct_deposit_id = (
   select (public.submit_account_deposit_request(checking_id, 'direct_deposit', 11, null, null)).id
   from qa_context
@@ -117,39 +120,18 @@ update qa_context set cheque_deposit_id = (
     checking_id, 'cheque', 13, null, user_id::text || '/qa-acceptance-check.png'
   )).id from qa_context
 );
-update qa_context set usdc_deposit_id = (
-  select (public.submit_stablecoin_deposit_request(
-    q.checking_id, 'USDC', i.id, 15, 'QA Sender'
-  )).id
-  from qa_context q
-  join public.deposit_instructions i on i.currency_code = 'USDC' and i.is_active
-  limit 1
-);
-update qa_context set usdt_deposit_id = (
-  select (public.submit_stablecoin_deposit_request(
-    q.checking_id, 'USDT', i.id, 16, 'QA Sender'
-  )).id
-  from qa_context q
-  join public.deposit_instructions i on i.currency_code = 'USDT' and i.is_active
-  limit 1
-);
-
 reset role;
 select set_config('request.jwt.claims', '{"role":"service_role"}', true);
 set local role service_role;
 update public.account_deposit_requests set status = 'approved'
 where id in (
   select direct_deposit_id from qa_context union all
-  select cheque_deposit_id from qa_context union all
-  select usdc_deposit_id from qa_context
+  select cheque_deposit_id from qa_context
 );
 update public.account_deposit_requests set status = 'rejected', review_note = 'QA rejection path'
-where id in (
-  select wire_deposit_id from qa_context union all
-  select usdt_deposit_id from qa_context
-);
+where id = (select wire_deposit_id from qa_context);
 
--- Currency access: approve GBP and reject EUR.
+-- Currency access: approve GBP and both stablecoins; reject EUR.
 reset role;
 select set_config(
   'request.jwt.claims',
@@ -159,16 +141,19 @@ select set_config(
 set local role authenticated;
 select public.request_currency_access('GBP');
 select public.request_currency_access('EUR');
+select public.request_currency_access('USDC');
+select public.request_currency_access('USDT');
 
 reset role;
 select set_config('request.jwt.claims', '{"role":"service_role"}', true);
 set local role service_role;
 update public.currency_access_requests set status = 'approved'
-where user_id = (select user_id from qa_context) and currency_code = 'GBP';
+where user_id = (select user_id from qa_context)
+  and currency_code in ('GBP', 'USDC', 'USDT');
 update public.currency_access_requests set status = 'rejected', review_note = 'QA rejection path'
 where user_id = (select user_id from qa_context) and currency_code = 'EUR';
 
--- Fiat-currency deposit into the newly enabled GBP balance.
+-- Fiat and stablecoin deposits into their newly enabled currency balances.
 reset role;
 select set_config(
   'request.jwt.claims',
@@ -188,11 +173,40 @@ with inserted as (
 )
 update qa_context set currency_deposit_id = (select id from inserted);
 
+with inserted as (
+  insert into public.currency_deposits (
+    user_id, currency_code, instruction_id, amount, sender_name
+  )
+  select q.user_id, 'USDC', i.id, 15, 'QA Sender'
+  from qa_context q
+  join public.deposit_instructions i on i.currency_code = 'USDC' and i.is_active
+  limit 1
+  returning id
+)
+update qa_context set usdc_deposit_id = (select id from inserted);
+
+with inserted as (
+  insert into public.currency_deposits (
+    user_id, currency_code, instruction_id, amount, sender_name
+  )
+  select q.user_id, 'USDT', i.id, 16, 'QA Sender'
+  from qa_context q
+  join public.deposit_instructions i on i.currency_code = 'USDT' and i.is_active
+  limit 1
+  returning id
+)
+update qa_context set usdt_deposit_id = (select id from inserted);
+
 reset role;
 select set_config('request.jwt.claims', '{"role":"service_role"}', true);
 set local role service_role;
 update public.currency_deposits set status = 'approved'
-where id = (select currency_deposit_id from qa_context);
+where id in (
+  select currency_deposit_id from qa_context union all
+  select usdc_deposit_id from qa_context
+);
+update public.currency_deposits set status = 'rejected', review_note = 'QA rejection path'
+where id = (select usdt_deposit_id from qa_context);
 
 -- Bank transfers: immediate own-account, escrow approval/rejection, and
 -- linked-account approval/rejection.
@@ -265,8 +279,27 @@ update qa_context set reverse_currency_conversion_id = (
   from qa_context q
   join public.currency_conversions c on c.id = q.currency_conversion_id
 );
+update qa_context set stablecoin_conversion_id = (
+  select (public.convert_currency_balance(
+    'USDC', 2, 'currency_balance', 'USDT', null
+  )).id
+);
+update qa_context set stablecoin_checking_conversion_id = (
+  select (public.convert_currency_balance(
+    'USDC', 1, 'bank_account', 'USD', checking_id
+  )).id
+  from qa_context
+);
 
 -- Native currency transfer: rejection refunds; approval retains reservation.
+update qa_context set stablecoin_transfer_reject_id = (
+  select (public.request_currency_transfer(
+    p_currency_code => 'USDT',
+    p_amount => 1,
+    p_wallet_address => 'TQAStablecoinWalletAddress123456789',
+    p_network => 'Tron (TRC20)'
+  )).id
+);
 update qa_context set currency_transfer_reject_id = (
   select (public.request_currency_transfer(
     'AUD', 1.25, 'QA Recipient', 'QA Australia Bank', null,
@@ -285,6 +318,7 @@ update qa_context set currency_transfer_approve_id = (
 reset role;
 select set_config('request.jwt.claims', '{"role":"service_role"}', true);
 set local role service_role;
+select public.review_currency_transfer((select stablecoin_transfer_reject_id from qa_context), 'rejected', 'QA stablecoin rejection path');
 select public.review_currency_transfer((select currency_transfer_reject_id from qa_context), 'rejected', 'QA rejection path');
 select public.review_currency_transfer((select currency_transfer_approve_id from qa_context), 'approved', 'QA approval path');
 
@@ -408,13 +442,15 @@ begin
   if (select status from public.account_deposit_requests where id = q.direct_deposit_id) <> 'approved'
     or (select status from public.account_deposit_requests where id = q.wire_deposit_id) <> 'rejected'
     or (select status from public.account_deposit_requests where id = q.cheque_deposit_id) <> 'approved'
-    or (select status from public.account_deposit_requests where id = q.usdc_deposit_id) <> 'approved'
-    or (select status from public.account_deposit_requests where id = q.usdt_deposit_id) <> 'rejected'
   then raise exception 'Deposit workflow assertion failed'; end if;
 
   if (select status from public.currency_access_requests where user_id = q.user_id and currency_code = 'GBP') <> 'approved'
     or not exists (select 1 from public.user_currency_balances where user_id = q.user_id and currency_code = 'GBP')
     or (select status from public.currency_deposits where id = q.currency_deposit_id) <> 'approved'
+    or (select status from public.currency_access_requests where user_id = q.user_id and currency_code = 'USDC') <> 'approved'
+    or (select status from public.currency_access_requests where user_id = q.user_id and currency_code = 'USDT') <> 'approved'
+    or (select status from public.currency_deposits where id = q.usdc_deposit_id) <> 'approved'
+    or (select status from public.currency_deposits where id = q.usdt_deposit_id) <> 'rejected'
   then raise exception 'Currency access/deposit assertion failed'; end if;
 
   if (select status from public.bank_transfers where id = q.immediate_transfer_id) <> 'completed'
@@ -428,9 +464,12 @@ begin
     or not exists (select 1 from public.currency_conversions where id = q.reverse_conversion_id)
     or not exists (select 1 from public.currency_conversions where id = q.currency_conversion_id)
     or not exists (select 1 from public.currency_conversions where id = q.reverse_currency_conversion_id)
+    or not exists (select 1 from public.currency_conversions where id = q.stablecoin_conversion_id)
+    or not exists (select 1 from public.currency_conversions where id = q.stablecoin_checking_conversion_id)
   then raise exception 'Currency conversion assertion failed'; end if;
 
-  if (select status from public.currency_transfers where id = q.currency_transfer_reject_id) <> 'rejected'
+  if (select status from public.currency_transfers where id = q.stablecoin_transfer_reject_id) <> 'rejected'
+    or (select status from public.currency_transfers where id = q.currency_transfer_reject_id) <> 'rejected'
     or (select status from public.currency_transfers where id = q.currency_transfer_approve_id) <> 'approved'
   then raise exception 'Currency transfer assertion failed'; end if;
 

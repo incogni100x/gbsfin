@@ -1,4 +1,11 @@
 export function formatBalance(balance, currency) {
+  if (currency === "USDC" || currency === "USDT") {
+    return `${currency} ${new Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 6,
+      minimumFractionDigits: 2,
+    }).format(balance)}`;
+  }
+
   return new Intl.NumberFormat("en-NG", {
     currency,
     maximumFractionDigits: currency === "NGN" ? 0 : 2,

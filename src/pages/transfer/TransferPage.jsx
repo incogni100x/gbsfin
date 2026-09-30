@@ -36,10 +36,7 @@ export default function TransferPage() {
   const { data: bankTransfers = [] } = useQuery({ enabled, queryFn: () => getBankTransfers(user.id), queryKey: bankTransfersQueryKey(user?.id), staleTime: 15_000 });
   const { data: currencyTransfers = [] } = useQuery({ enabled, queryFn: () => getCurrencyTransfers(user.id), queryKey: currencyTransfersQueryKey(user?.id), staleTime: 15_000 });
   const enabledCurrencies = currencies.filter(
-    (currency) =>
-      currency.isEnabled &&
-      currency.currency_kind === "fiat" &&
-      currency.code !== "USD",
+    (currency) => currency.isEnabled && currency.code !== "USD",
   );
   const checkingAccounts = accounts.filter(
     (account) =>
@@ -66,7 +63,7 @@ export default function TransferPage() {
       {error ? <p className="text-body-medium text-[var(--color-text-error-primary)]">{error.message || "Unable to load your currency balances."}</p> : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isPending ? Array.from({ length: 6 }, (_, index) => <CurrencyCardSkeleton key={index} />) : enabledCurrencies.map((currency) => <LayerCard className="w-full !bg-[var(--color-background-primary-default)] text-[var(--color-text-primary)] ring-[var(--color-separator-border)]" key={currency.code}>
           <LayerCard.Secondary className="!bg-[var(--color-background-secondary-default)] px-4 py-3 text-[var(--color-text-secondary)]"><span className="text-body-medium">{currency.code}</span></LayerCard.Secondary>
-          <LayerCard.Primary className="!bg-[var(--color-background-primary-default)] px-4 py-4 ring-[var(--color-separator-border)]"><strong className="financial-number text-title-2-medium">{currency.symbol} {currency.balance.toLocaleString("en", { maximumFractionDigits: 2, minimumFractionDigits: 2 })}</strong><span className="text-body-2-medium text-[var(--color-text-secondary)]">{currency.name}</span><div className="mt-3 flex flex-wrap gap-2"><CurrencyConversionDialog availableCurrencies={enabledCurrencies} checkingAccounts={checkingAccounts} currency={currency} /><CurrencyTransferDialog currency={currency} /></div></LayerCard.Primary>
+          <LayerCard.Primary className="!bg-[var(--color-background-primary-default)] px-4 py-4 ring-[var(--color-separator-border)]"><strong className="financial-number text-title-2-medium">{currency.symbol} {currency.balance.toLocaleString("en", { maximumFractionDigits: currency.currency_kind === "stablecoin" ? 6 : 2, minimumFractionDigits: 2 })}</strong><span className="text-body-2-medium text-[var(--color-text-secondary)]">{currency.name}</span><div className="mt-3 flex flex-wrap gap-2"><CurrencyConversionDialog availableCurrencies={enabledCurrencies} checkingAccounts={checkingAccounts} currency={currency} /><CurrencyTransferDialog currency={currency} /></div></LayerCard.Primary>
         </LayerCard>)}
       </div>}
     </section>

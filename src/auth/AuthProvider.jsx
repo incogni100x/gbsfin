@@ -27,9 +27,7 @@ function AuthProvider({ children }) {
       return false;
     }
 
-    const { data, error } = await supabase.rpc(
-      "is_current_session_verified",
-    );
+    const { data, error } = await supabase.rpc("is_current_session_verified");
     const verified = !error && data === true;
     setSessionVerified(verified);
     return verified;

@@ -120,29 +120,6 @@ export async function submitCurrencyDeposit({
   return data;
 }
 
-export async function submitStablecoinDepositRequest({
-  accountId,
-  amount,
-  currencyCode,
-  instructionId,
-  senderName,
-}) {
-  const client = requireSupabase();
-  const { data, error } = await client.rpc(
-    "submit_stablecoin_deposit_request",
-    {
-      p_account_id: accountId,
-      p_amount: Number(amount),
-      p_currency_code: currencyCode,
-      p_instruction_id: instructionId,
-      p_sender_name: senderName.trim(),
-    },
-  );
-
-  throwIfError(error);
-  return data;
-}
-
 export async function getDepositHistory(userId) {
   const client = requireSupabase();
   const { data, error } = await client

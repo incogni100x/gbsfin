@@ -40,7 +40,10 @@ function MobileNavigationDrawer({ navigationItems }) {
                 className="mx-auto h-1 w-10 rounded-full bg-[var(--color-background-quaternary-default)]"
               />
 
-              <nav aria-label="Mobile dashboard navigation" className="mt-7 grid gap-1">
+              <nav
+                aria-label="Mobile dashboard navigation"
+                className="mt-7 grid gap-1"
+              >
                 {navigationItems.map((item) => (
                   <NavLink
                     key={item.value}

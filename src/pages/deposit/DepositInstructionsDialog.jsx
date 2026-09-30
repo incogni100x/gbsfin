@@ -1,6 +1,5 @@
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
-import { Select, SelectItem } from "@/components/base/select/select";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
@@ -13,17 +12,10 @@ import {
   depositInstructionsQueryKey,
   getDepositInstructions,
   submitCurrencyDeposit,
-  submitStablecoinDepositRequest,
 } from "./depositService.js";
 
-function maskAccount(accountNumber) {
-  return `•••• ${String(accountNumber).slice(-4)}`;
-}
-
-function DepositInstructionsDialog({ accounts = [], currency, onSubmitted }) {
+function DepositInstructionsDialog({ currency, onSubmitted }) {
   const { profile } = useAuth();
-  const usdAccounts = accounts.filter((account) => account.currency === "USD");
-  const [accountId, setAccountId] = useState("");
   const [amount, setAmount] = useState("");
   const [detailsReady, setDetailsReady] = useState(false);
   const [error, setError] = useState("");
@@ -58,7 +50,6 @@ function DepositInstructionsDialog({ accounts = [], currency, onSubmitted }) {
     setDetailsReady(false);
     setStep("form");
     setAmount("");
-    setAccountId("");
     setError("");
   };
 
@@ -75,22 +66,12 @@ function DepositInstructionsDialog({ accounts = [], currency, onSubmitted }) {
     setSubmitting(true);
 
     try {
-      if (isCryptoDeposit) {
-        await submitStablecoinDepositRequest({
-          accountId,
-          amount,
-          currencyCode: currency.code,
-          instructionId: instruction.id,
-          senderName,
-        });
-      } else {
-        await submitCurrencyDeposit({
-          amount,
-          currencyCode: currency.code,
-          instructionId: instruction.id,
-          senderName,
-        });
-      }
+      await submitCurrencyDeposit({
+        amount,
+        currencyCode: currency.code,
+        instructionId: instruction.id,
+        senderName,
+      });
       await onSubmitted();
       setStep("submitted");
     } catch (submissionError) {
@@ -128,7 +109,7 @@ function DepositInstructionsDialog({ accounts = [], currency, onSubmitted }) {
               </DialogTitle>
               <p className="text-body-medium mt-2 text-[var(--color-text-secondary)]">
                 {isCryptoDeposit
-                  ? `Your ${currency.code} deposit is pending review. Your selected USD account will update once it has been approved.`
+                  ? `Your ${currency.code} deposit is pending review. Your ${currency.code} balance will update once it has been approved.`
                   : `Your ${currency.code} direct deposit request has been recorded.`}
               </p>
               {!isCryptoDeposit && (
@@ -160,25 +141,14 @@ function DepositInstructionsDialog({ accounts = [], currency, onSubmitted }) {
                   </strong>
                 </div>
                 {isCryptoDeposit && (
-                  <>
-                    <div className="flex items-center justify-between gap-4 border-t border-[var(--color-separator-border)] pt-3">
-                      <span className="text-body-medium text-[var(--color-text-secondary)]">
-                        Account to credit
-                      </span>
-                      <strong className="text-body-medium text-right">
-                        {usdAccounts.find((account) => account.id === accountId)
-                          ?.name || "USD Account"}
-                      </strong>
-                    </div>
-                    <div className="flex items-center justify-between gap-4 border-t border-[var(--color-separator-border)] pt-3">
-                      <span className="text-body-medium text-[var(--color-text-secondary)]">
-                        Network
-                      </span>
-                      <strong className="text-body-medium text-right">
-                        {instruction?.network || instruction?.payment_rail}
-                      </strong>
-                    </div>
-                  </>
+                  <div className="flex items-center justify-between gap-4 border-t border-[var(--color-separator-border)] pt-3">
+                    <span className="text-body-medium text-[var(--color-text-secondary)]">
+                      Network
+                    </span>
+                    <strong className="text-body-medium text-right">
+                      {instruction?.network || instruction?.payment_rail}
+                    </strong>
+                  </div>
                 )}
                 <div className="flex items-center justify-between gap-4 border-t border-[var(--color-separator-border)] pt-3">
                   <span className="text-body-medium text-[var(--color-text-secondary)]">
@@ -204,23 +174,6 @@ function DepositInstructionsDialog({ accounts = [], currency, onSubmitted }) {
               </p>
 
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                {isCryptoDeposit && (
-                  <label className="grid gap-1 text-body-medium sm:col-span-2">
-                    Account to credit
-                    <Select
-                      aria-label="Account to credit"
-                      onSelectionChange={(key) => setAccountId(String(key))}
-                      placeholder="Select a USD account"
-                      selectedKey={accountId || null}
-                    >
-                      {usdAccounts.map((account) => (
-                        <SelectItem id={account.id} key={account.id}>
-                          {account.name} · {maskAccount(account.accountNumber)}
-                        </SelectItem>
-                      ))}
-                    </Select>
-                  </label>
-                )}
                 <Input
                   label="Amount to deposit"
                   leadingAddon={
@@ -247,7 +200,6 @@ function DepositInstructionsDialog({ accounts = [], currency, onSubmitted }) {
                 disabled={
                   !Number.parseFloat(amount) ||
                   !senderName.trim() ||
-                  (isCryptoDeposit && (!accountId || !usdAccounts.length)) ||
                   (!isCryptoDeposit && (isPending || !instruction)) ||
                   submitting
                 }
@@ -271,12 +223,6 @@ function DepositInstructionsDialog({ accounts = [], currency, onSubmitted }) {
                 <p className="text-body-2-medium mt-3 text-[var(--color-text-error-primary)]">
                   {instructionsError.message ||
                     "Deposit processing is temporarily unavailable."}
-                </p>
-              )}
-              {isCryptoDeposit && !usdAccounts.length && (
-                <p className="text-body-2-medium mt-3 text-[var(--color-text-error-primary)]">
-                  You need a USD bank account before making a stablecoin
-                  deposit.
                 </p>
               )}
               {error && (

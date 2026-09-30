@@ -12,7 +12,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import AccountDepositDialog from "./AccountDepositDialog.jsx";
 import CurrencyDepositSection from "./CurrencyDepositSection.jsx";
 import DepositHistoryTable from "./DepositHistoryTable.jsx";
-import StablecoinDepositSection from "./StablecoinDepositSection.jsx";
 import {
   accountDepositHistoryQueryKey,
   accountDepositOptionsQueryKey,
@@ -211,11 +210,6 @@ function DepositPage() {
           </div>
         )}
       </section>
-
-      <StablecoinDepositSection
-        accounts={options.data?.accounts || []}
-        onSubmitted={refreshDeposits}
-      />
 
       <CurrencyDepositSection />
 
