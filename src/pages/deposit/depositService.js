@@ -146,6 +146,7 @@ export async function getAccountDepositOptions(userId) {
       .from("linked_bank_accounts")
       .select("id, account_name, bank_name, account_number, routing_number")
       .eq("user_id", userId)
+      .eq("transfer_scope", "domestic")
       .order("created_at", { ascending: false }),
   ]);
 

@@ -108,9 +108,34 @@ export async function submitBankTransfer({ amount, destinationId, destinationKin
   return { ...data, amount: Number(data.amount) };
 }
 
+export async function createLinkedAccountAndSubmitBankTransfer({
+  account,
+  amount,
+  sourceAccountId,
+  transferType,
+}) {
+  const { data, error } = await requireSupabase().rpc(
+    "create_linked_account_and_submit_bank_transfer",
+    {
+      p_account_name: account.account_name,
+      p_account_number: account.account_number,
+      p_account_type: account.account_type,
+      p_address: account.address,
+      p_amount: Number(amount),
+      p_bank_name: account.bank_name,
+      p_routing_number: account.routing_number,
+      p_source_account_id: sourceAccountId,
+      p_swift_code: account.swift_code,
+      p_transfer_type: transferType,
+    },
+  );
+  throwIfError(error);
+  return { ...data, amount: Number(data.amount) };
+}
+
 export async function getBankTransfers(userId) {
   const { data, error } = await requireSupabase().from("bank_transfers")
-    .select("id, source_account_id, destination_kind, recipient_name, recipient_bank_name, recipient_account_number, amount, currency_code, status, application_reference, created_at")
+    .select("id, source_account_id, transfer_type, destination_kind, recipient_name, recipient_bank_name, recipient_account_number, recipient_routing_number, recipient_swift_code, recipient_address, amount, currency_code, status, application_reference, created_at")
     .eq("user_id", userId).order("created_at", { ascending: false });
   throwIfError(error);
   return data.map((transfer) => ({ ...transfer, amount: Number(transfer.amount) }));

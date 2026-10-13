@@ -118,7 +118,7 @@ function DepositTable({ deposits, onClose, title }) {
                       size="small"
                       variant="secondary"
                     >
-                      Close
+                      Early closure
                     </Button>
                   ) : (
                     "—"
@@ -459,35 +459,42 @@ export default function FixedDepositPage() {
       >
         <DialogContent className="gap-6 sm:max-w-lg sm:p-7">
           <DialogHeader className="gap-2 pr-6 text-left">
-            <DialogTitle className="text-title-3-medium text-[var(--color-text-error-primary)] sm:text-title-2-medium">
-              Close Fixed Deposit?
+            <DialogTitle className="text-title-3-medium sm:text-title-2-medium">
+              Request early closure
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to close this fixed deposit before maturity?
+              Review the penalty and deposit summary before submitting your
+              request.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-5">
-            <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-error-default)] bg-[var(--color-background-tertiary-error)] p-4 sm:p-5">
-              <h3 className="text-body-medium text-[var(--color-text-error-primary)]">
-                Early Closure Penalty
+          <div className="grid gap-6">
+            <section className="grid gap-1.5">
+              <h3 className="text-headline-medium text-[var(--color-text-error-primary)]">
+                Early closure penalty
               </h3>
-              <p className="text-body-medium mt-1 text-[var(--color-text-error-primary)]">
+              <p className="text-body-medium text-[var(--color-text-secondary)]">
                 A penalty of 5.5% will be applied to your earned interest.
               </p>
-            </div>
-            <div className="grid gap-3">
-              <h3 className="text-body-medium">Closure Summary</h3>
-              <p className="text-body-medium flex items-center justify-between gap-4">
-                <span>Principal Amount</span>
-                <span className="financial-number text-body-medium">
-                  {money(closing?.amount)}
-                </span>
-              </p>
-              <p className="text-body-medium flex items-center justify-between gap-4 text-[var(--color-text-error-primary)]">
-                <span>Penalty</span>
-                <span className="financial-number text-body-medium">5.5%</span>
-              </p>
-            </div>
+            </section>
+            <section className="grid gap-3 border-t border-[var(--color-separator-border)] pt-5">
+              <h3 className="text-headline-medium">Closure summary</h3>
+              <div className="financial-number grid gap-3 rounded-[var(--radius-lg)] border border-[var(--color-separator-border)] bg-[var(--color-background-secondary-default)] p-4 sm:p-5">
+                <p className="flex items-center justify-between gap-4 text-body-medium">
+                  <span className="text-[var(--color-text-secondary)]">
+                    Principal amount
+                  </span>
+                  <span>{money(closing?.amount)}</span>
+                </p>
+                <p className="flex items-center justify-between gap-4 border-t border-[var(--color-separator-border)] pt-3 text-body-medium">
+                  <span className="text-[var(--color-text-secondary)]">
+                    Early closure penalty
+                  </span>
+                  <span className="text-[var(--color-text-error-primary)]">
+                    5.5%
+                  </span>
+                </p>
+              </div>
+            </section>
           </div>
           <DialogFooter className="gap-3 [&_button]:w-full sm:[&_button]:w-auto">
             <DialogClose render={<Button variant="secondary">Cancel</Button>} />
@@ -496,7 +503,7 @@ export default function FixedDepositPage() {
               onClick={() => close.mutate(closing)}
               variant="danger"
             >
-              {close.isPending ? "Submitting…" : "Request closure"}
+              {close.isPending ? "Submitting…" : "Request early closure"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -519,6 +526,12 @@ export default function FixedDepositPage() {
             <div>
               <h3 className="text-body-medium mb-3">Request Details</h3>
               <div className="financial-number grid gap-3 rounded-[var(--radius-lg)] border border-[var(--color-separator-border)] bg-[var(--color-background-secondary-default)] p-4 sm:p-5">
+                <p className="grid gap-1 border-b border-[var(--color-separator-border)] pb-3 sm:grid-cols-[auto_1fr] sm:items-center sm:gap-4">
+                  <span className="text-body-medium">Fixed deposit ID</span>
+                  <span className="break-all font-mono text-body-medium text-[var(--color-accent-600)] sm:text-right">
+                    {closureConfirmation?.id}
+                  </span>
+                </p>
                 <p className="text-body-medium flex items-center justify-between gap-4">
                   <span>Principal</span>
                   <span className="text-body-medium">
