@@ -63,8 +63,10 @@ export async function getLoans(userId) {
   return data.map((row) => ({
     ...row,
     amount: Number(row.amount),
+    annual_interest_rate: Number(row.annual_interest_rate),
     monthly_payment: Number(row.monthly_payment),
     remaining_balance: Number(row.remaining_balance),
+    remaining_months: Number(row.remaining_months),
     overdue_amount: Number(row.overdue_amount),
   }));
 }

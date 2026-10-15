@@ -44,6 +44,29 @@ const money = (value) =>
     style: "currency",
     currency: "USD",
   });
+
+const loanDateFormatter = new Intl.DateTimeFormat("en-US", {
+  day: "numeric",
+  month: "short",
+  timeZone: "UTC",
+  year: "numeric",
+});
+
+const date = (value) =>
+  value
+    ? loanDateFormatter.format(new Date(`${value}T00:00:00Z`))
+    : "Not scheduled";
+
+const rate = (value) =>
+  `${Number(value || 0).toLocaleString("en-US", {
+    maximumFractionDigits: 2,
+  })}% annually`;
+
+const statusLabel = (status) =>
+  status
+    .replaceAll("_", " ")
+    .replace(/^./, (character) => character.toUpperCase());
+
 function StatCard({ detail, label, value }) {
   return (
     <LayerCard className="w-full !bg-[var(--color-background-primary-default)] ring-[var(--color-separator-border)]">
@@ -61,65 +84,184 @@ function StatCard({ detail, label, value }) {
     </LayerCard>
   );
 }
+
+function MobileLoanCard({ loan, onPayment }) {
+  const isActive = loan.status === "active";
+
+  return (
+    <article className="rounded-[var(--radius-2lg)] border border-[var(--color-separator-border)] bg-[var(--color-background-primary-default)] p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-title-3-medium text-[var(--color-text-primary)]">
+            {loan.loan_types?.name || "Loan"}
+          </p>
+          <p className="mt-0.5 text-body-2-medium text-[var(--color-text-secondary)]">
+            {loan.reason || "No purpose provided"}
+          </p>
+        </div>
+        <Badge color={isActive ? "primary" : "neutral"}>
+          {statusLabel(loan.status)}
+        </Badge>
+      </div>
+
+      <div className="mt-4 border-t border-[var(--color-separator-border)] pt-4">
+        <p className="text-body-2-medium text-[var(--color-text-secondary)]">
+          {isActive ? "Remaining balance" : "Requested amount"}
+        </p>
+        <p className="financial-number mt-1 text-title-2-medium text-[var(--color-text-primary)]">
+          {money(isActive ? loan.remaining_balance : loan.amount)}
+        </p>
+      </div>
+
+      <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-4">
+        <div>
+          <dt className="text-body-2-medium text-[var(--color-text-secondary)]">
+            Monthly payment
+          </dt>
+          <dd className="financial-number mt-1 text-body-medium">
+            {money(loan.monthly_payment)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-body-2-medium text-[var(--color-text-secondary)]">
+            Interest rate
+          </dt>
+          <dd className="financial-number mt-1 text-body-medium">
+            {rate(loan.annual_interest_rate)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-body-2-medium text-[var(--color-text-secondary)]">
+            Remaining term
+          </dt>
+          <dd className="mt-1 text-body-medium">
+            {loan.remaining_months} months
+          </dd>
+        </div>
+        <div>
+          <dt className="text-body-2-medium text-[var(--color-text-secondary)]">
+            Next payment due
+          </dt>
+          <dd className="mt-1 text-body-medium">{date(loan.next_due_date)}</dd>
+        </div>
+        <div className="col-span-2 border-t border-[var(--color-separator-border)] pt-4">
+          <dt className="text-body-2-medium text-[var(--color-text-secondary)]">
+            Original loan amount
+          </dt>
+          <dd className="financial-number mt-1 text-title-3-medium">
+            {money(loan.amount)}
+          </dd>
+        </div>
+      </dl>
+
+      {onPayment ? (
+        <Button
+          className="mt-4 w-full"
+          onClick={() => onPayment(loan)}
+          size="small"
+        >
+          Make payment
+        </Button>
+      ) : null}
+    </article>
+  );
+}
+
 function LoanTable({ loans, onPayment, title }) {
   return (
     <section>
       <h2 className="text-title-3-medium mb-4 sm:text-title-2-medium">
         {title}
       </h2>
-      <Table
-        aria-label={title}
-        containerClassName="overflow-x-auto rounded-[var(--radius-2lg)] border border-[var(--color-separator-border)] bg-[var(--color-background-primary-default)] touch-pan-x"
-        size="md"
-      >
-        <TableHeader>
-          <TableColumn isRowHeader>Loan</TableColumn>
-          <TableColumn>Amount</TableColumn>
-          <TableColumn>Purpose</TableColumn>
-          <TableColumn>Term</TableColumn>
-          <TableColumn>Monthly payment</TableColumn>
-          <TableColumn>Status</TableColumn>
-          {onPayment ? <TableColumn>Action</TableColumn> : null}
-        </TableHeader>
-        <TableBody>
-          {loans.length ? (
-            loans.map((loan) => (
-              <TableRow key={loan.id}>
-                <TableCell>{loan.loan_types?.name}</TableCell>
-                <TableCell>{money(loan.amount)}</TableCell>
-                <TableCell>{loan.reason}</TableCell>
-                <TableCell>{loan.duration_months} months</TableCell>
-                <TableCell>{money(loan.monthly_payment)}</TableCell>
-                <TableCell>
-                  <Badge
-                    color={loan.status === "active" ? "primary" : "neutral"}
-                  >
-                    {loan.status}
-                  </Badge>
-                </TableCell>
-                {onPayment ? (
+      {loans.length ? (
+        <div className="grid gap-3 md:hidden">
+          {loans.map((loan) => (
+            <MobileLoanCard
+              key={loan.id}
+              loan={loan}
+              onPayment={onPayment}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-[var(--radius-2lg)] border border-dashed border-[var(--color-separator-border)] px-4 py-8 text-center md:hidden">
+          <span className="text-headline-medium">No records yet</span>
+          <p className="mt-1 text-body-2-medium text-[var(--color-text-secondary)]">
+            Your loan requests will appear here.
+          </p>
+        </div>
+      )}
+      <div className="hidden md:block">
+        <Table
+          aria-label={title}
+          className="min-w-[1180px]"
+          containerClassName="overflow-x-auto rounded-[var(--radius-2lg)] border border-[var(--color-separator-border)] bg-[var(--color-background-primary-default)] touch-pan-x"
+          size="md"
+        >
+          <TableHeader>
+            <TableColumn isRowHeader>Loan</TableColumn>
+            <TableColumn>Amount</TableColumn>
+            <TableColumn>Remaining balance</TableColumn>
+            <TableColumn>Monthly payment</TableColumn>
+            <TableColumn>Interest rate</TableColumn>
+            <TableColumn>Remaining term</TableColumn>
+            <TableColumn>Next payment due</TableColumn>
+            <TableColumn>Status</TableColumn>
+            {onPayment ? <TableColumn>Action</TableColumn> : null}
+          </TableHeader>
+          <TableBody>
+            {loans.length ? (
+              loans.map((loan) => (
+                <TableRow key={loan.id}>
                   <TableCell>
-                    <Button size="small" onClick={() => onPayment(loan)}>
-                      Make payment
-                    </Button>
+                    <span className="grid">
+                      <span>{loan.loan_types?.name || "Loan"}</span>
+                      <span className="text-body-2-medium text-[var(--color-text-secondary)]">
+                        {loan.reason || "No purpose provided"}
+                      </span>
+                    </span>
                   </TableCell>
-                ) : null}
+                  <TableCell>{money(loan.amount)}</TableCell>
+                  <TableCell>{money(loan.remaining_balance)}</TableCell>
+                  <TableCell>{money(loan.monthly_payment)}</TableCell>
+                  <TableCell>
+                    <span className="financial-number">
+                      {rate(loan.annual_interest_rate)}
+                    </span>
+                  </TableCell>
+                  <TableCell>{loan.remaining_months} months</TableCell>
+                  <TableCell>{date(loan.next_due_date)}</TableCell>
+                  <TableCell>
+                    <Badge
+                      color={loan.status === "active" ? "primary" : "neutral"}
+                    >
+                      {statusLabel(loan.status)}
+                    </Badge>
+                  </TableCell>
+                  {onPayment ? (
+                    <TableCell>
+                      <Button size="small" onClick={() => onPayment(loan)}>
+                        Make payment
+                      </Button>
+                    </TableCell>
+                  ) : null}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={onPayment ? 9 : 8}>
+                  <div className="py-8 text-center">
+                    <span className="text-headline-medium">No records yet</span>
+                    <p className="mt-1 text-body-2-medium text-[var(--color-text-secondary)]">
+                      Your loan requests will appear here.
+                    </p>
+                  </div>
+                </TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={onPayment ? 7 : 6}>
-                <div className="py-8 text-center">
-                  <span className="text-headline-medium">No records yet</span>
-                  <p className="text-body-2-medium mt-1 text-[var(--color-text-secondary)]">
-                    Your loan requests will appear here.
-                  </p>
-                </div>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </section>
   );
 }

@@ -44,6 +44,18 @@ const money = (value) =>
     style: "currency",
     currency: "USD",
   });
+const rate = (value) =>
+  `${Number(value || 0).toLocaleString("en-US", {
+    maximumFractionDigits: 2,
+  })}% monthly`;
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  day: "numeric",
+  month: "short",
+  timeZone: "UTC",
+  year: "numeric",
+});
+const date = (value) =>
+  value ? dateFormatter.format(new Date(`${value}T00:00:00Z`)) : "—";
 const activeStatuses = new Set([
   "active",
   "pending_closure",
@@ -52,6 +64,12 @@ const activeStatuses = new Set([
 ]);
 const statusLabel = (status) =>
   status.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase());
+const statusBadgeClassName = (status) =>
+  status === "pending_closure"
+    ? "bg-[var(--color-background-tertiary-error)] text-[var(--color-text-error-primary)]"
+    : undefined;
+const earlyClosureButtonClassName =
+  "border-[var(--color-border-error-default)] text-[var(--color-text-error-primary)] hover:border-[var(--color-border-error-default)] hover:bg-[var(--color-background-tertiary-error)]";
 
 function StatCard({ detail, label, value }) {
   return (
@@ -71,75 +89,201 @@ function StatCard({ detail, label, value }) {
   );
 }
 
+const canRequestEarlyClosure = (deposit) =>
+  ["active", "rejected"].includes(deposit.status) &&
+  new Date(deposit.end_date) > new Date();
+
+function MobileDepositCard({ deposit, onClose }) {
+  const accountName =
+    deposit.user_accounts?.account_types?.name || "Account";
+  const accountNumber = deposit.user_accounts?.account_number?.slice(-4);
+
+  return (
+    <article className="rounded-[var(--radius-2lg)] border border-[var(--color-separator-border)] bg-[var(--color-background-primary-default)] p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-title-3-medium text-[var(--color-text-primary)]">
+            {accountName}
+          </p>
+          <p className="account-number mt-0.5 text-body-2-medium text-[var(--color-text-secondary)]">
+            •••• {accountNumber}
+          </p>
+        </div>
+        <Badge
+          className={statusBadgeClassName(deposit.status)}
+          color={deposit.status === "active" ? "primary" : "neutral"}
+        >
+          {statusLabel(deposit.status)}
+        </Badge>
+      </div>
+
+      <div className="mt-4 border-t border-[var(--color-separator-border)] pt-4">
+        <p className="text-body-2-medium text-[var(--color-text-secondary)]">
+          Principal
+        </p>
+        <p className="financial-number mt-1 text-title-2-medium text-[var(--color-text-primary)]">
+          {money(deposit.amount)}
+        </p>
+      </div>
+
+      <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-4">
+        <div>
+          <dt className="text-body-2-medium text-[var(--color-text-secondary)]">
+            Accrued interest
+          </dt>
+          <dd className="financial-number mt-1 text-body-medium">
+            {money(deposit.accruedProfit)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-body-2-medium text-[var(--color-text-secondary)]">
+            Interest rate
+          </dt>
+          <dd className="financial-number mt-1 text-body-medium">
+            {rate(deposit.monthly_rate)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-body-2-medium text-[var(--color-text-secondary)]">
+            Term
+          </dt>
+          <dd className="mt-1 text-body-medium">
+            {deposit.duration_months} months
+          </dd>
+        </div>
+        <div>
+          <dt className="text-body-2-medium text-[var(--color-text-secondary)]">
+            Maturity date
+          </dt>
+          <dd className="mt-1 text-body-medium">{date(deposit.end_date)}</dd>
+        </div>
+        <div className="col-span-2 border-t border-[var(--color-separator-border)] pt-4">
+          <dt className="text-body-2-medium text-[var(--color-text-secondary)]">
+            Maturity amount
+          </dt>
+          <dd className="financial-number mt-1 text-title-3-medium">
+            {money(deposit.maturityAmount)}
+          </dd>
+        </div>
+      </dl>
+
+      {canRequestEarlyClosure(deposit) ? (
+        <Button
+          className={`mt-4 w-full ${earlyClosureButtonClassName}`}
+          onClick={() => onClose(deposit)}
+          size="small"
+          variant="secondary"
+        >
+          Early closure
+        </Button>
+      ) : null}
+    </article>
+  );
+}
+
 function DepositTable({ deposits, onClose, title }) {
   return (
     <section>
       <h2 className="text-title-3-medium mb-4 sm:text-title-2-medium">
         {title}
       </h2>
-      <Table
-        aria-label={title}
-        containerClassName="overflow-x-auto rounded-[var(--radius-2lg)] border border-[var(--color-separator-border)] bg-[var(--color-background-primary-default)] touch-pan-x"
-        size="md"
-      >
-        <TableHeader>
-          <TableColumn isRowHeader>Account</TableColumn>
-          <TableColumn>Principal</TableColumn>
-          <TableColumn>Interest</TableColumn>
-          <TableColumn>Term</TableColumn>
-          <TableColumn>Status</TableColumn>
-          <TableColumn>Action</TableColumn>
-        </TableHeader>
-        <TableBody>
-          {deposits.length ? (
-            deposits.map((deposit) => (
-              <TableRow key={deposit.id}>
-                <TableCell>
-                  {deposit.user_accounts?.account_types?.name || "Account"}{" "}
-                  <span className="account-number">
-                    •••• {deposit.user_accounts?.account_number?.slice(-4)}
-                  </span>
-                </TableCell>
-                <TableCell>{money(deposit.amount)}</TableCell>
-                <TableCell>{money(deposit.accruedProfit)}</TableCell>
-                <TableCell>{deposit.duration_months} months</TableCell>
-                <TableCell>
-                  <Badge
-                    color={deposit.status === "active" ? "primary" : "neutral"}
-                  >
-                    {statusLabel(deposit.status)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {["active", "rejected"].includes(deposit.status) &&
-                  new Date(deposit.end_date) > new Date() ? (
-                    <Button
-                      onClick={() => onClose(deposit)}
-                      size="small"
-                      variant="secondary"
+      {deposits.length ? (
+        <div className="grid gap-3 md:hidden">
+          {deposits.map((deposit) => (
+            <MobileDepositCard
+              deposit={deposit}
+              key={deposit.id}
+              onClose={onClose}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-[var(--radius-2lg)] border border-dashed border-[var(--color-separator-border)] px-4 py-8 text-center md:hidden">
+          <span className="text-headline-medium">No records yet</span>
+          <p className="mt-1 text-body-2-medium text-[var(--color-text-secondary)]">
+            Your fixed deposits will appear here.
+          </p>
+        </div>
+      )}
+      <div className="hidden md:block">
+        <Table
+          aria-label={title}
+          className="min-w-[1120px]"
+          containerClassName="overflow-x-auto rounded-[var(--radius-2lg)] border border-[var(--color-separator-border)] bg-[var(--color-background-primary-default)] touch-pan-x"
+          size="md"
+        >
+          <TableHeader>
+            <TableColumn isRowHeader>Account</TableColumn>
+            <TableColumn>Principal</TableColumn>
+            <TableColumn>Accrued interest</TableColumn>
+            <TableColumn>Interest rate</TableColumn>
+            <TableColumn>Term</TableColumn>
+            <TableColumn>Maturity date</TableColumn>
+            <TableColumn>Maturity amount</TableColumn>
+            <TableColumn>Status</TableColumn>
+            <TableColumn>Action</TableColumn>
+          </TableHeader>
+          <TableBody>
+            {deposits.length ? (
+              deposits.map((deposit) => (
+                <TableRow key={deposit.id}>
+                  <TableCell>
+                    {deposit.user_accounts?.account_types?.name || "Account"}{" "}
+                    <span className="account-number">
+                      •••• {deposit.user_accounts?.account_number?.slice(-4)}
+                    </span>
+                  </TableCell>
+                  <TableCell>{money(deposit.amount)}</TableCell>
+                  <TableCell>{money(deposit.accruedProfit)}</TableCell>
+                  <TableCell>
+                    <span className="financial-number">
+                      {rate(deposit.monthly_rate)}
+                    </span>
+                  </TableCell>
+                  <TableCell>{deposit.duration_months} months</TableCell>
+                  <TableCell>{date(deposit.end_date)}</TableCell>
+                  <TableCell>{money(deposit.maturityAmount)}</TableCell>
+                  <TableCell>
+                    <Badge
+                      className={statusBadgeClassName(deposit.status)}
+                      color={
+                        deposit.status === "active" ? "primary" : "neutral"
+                      }
                     >
-                      Early closure
-                    </Button>
-                  ) : (
-                    "—"
-                  )}
+                      {statusLabel(deposit.status)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {canRequestEarlyClosure(deposit) ? (
+                      <Button
+                        className={earlyClosureButtonClassName}
+                        onClick={() => onClose(deposit)}
+                        size="small"
+                        variant="secondary"
+                      >
+                        Early closure
+                      </Button>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={9}>
+                  <div className="py-8 text-center">
+                    <span className="text-headline-medium">No records yet</span>
+                    <p className="mt-1 text-body-2-medium text-[var(--color-text-secondary)]">
+                      Your fixed deposits will appear here.
+                    </p>
+                  </div>
                 </TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={6}>
-                <div className="py-8 text-center">
-                  <span className="text-headline-medium">No records yet</span>
-                  <p className="text-body-2-medium mt-1 text-[var(--color-text-secondary)]">
-                    Your fixed deposits will appear here.
-                  </p>
-                </div>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </section>
   );
 }

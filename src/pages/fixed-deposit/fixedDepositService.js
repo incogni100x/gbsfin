@@ -13,7 +13,24 @@ export async function getFixedDeposits(userId) {
     .select("id, account_id, amount, duration_months, monthly_rate, status, start_date, end_date, closure_requested_at, penalty_amount, created_at, user_accounts(account_number, account_types(name)), fixed_deposit_profits(profit_amount, finalized)")
     .eq("user_id", userId).order("created_at", { ascending: false });
   check(error);
-  return data.map((row) => ({ ...row, amount: Number(row.amount), monthly_rate: Number(row.monthly_rate), penalty_amount: Number(row.penalty_amount), accruedProfit: (row.fixed_deposit_profits ?? []).reduce((sum, profit) => sum + Number(profit.profit_amount), 0) }));
+  return data.map((row) => {
+    const amount = Number(row.amount);
+    const monthlyRate = Number(row.monthly_rate);
+    const maturityInterest =
+      amount * (monthlyRate / 100) * Number(row.duration_months);
+
+    return {
+      ...row,
+      amount,
+      monthly_rate: monthlyRate,
+      penalty_amount: Number(row.penalty_amount),
+      accruedProfit: (row.fixed_deposit_profits ?? []).reduce(
+        (sum, profit) => sum + Number(profit.profit_amount),
+        0,
+      ),
+      maturityAmount: Math.round((amount + maturityInterest) * 100) / 100,
+    };
+  });
 }
 
 export async function openFixedDeposit({ accountId, amount, rateId }) {
