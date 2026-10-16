@@ -121,14 +121,13 @@ export default function VerificationApp() {
               <p className="mt-4 text-body-medium text-[var(--color-accent-400)]">
                 Secure document submission
               </p>
-              <h1 className="mt-2">
-                <span className="block text-display-4-medium sm:text-display-3-medium">
-                  Advanced Verification
-                </span>
-                <span className="mt-3 block text-body-regular text-[var(--color-text-secondary)] sm:mt-4 sm:text-headline-regular">
-                  Complete your identity verification to access all features
-                </span>
+              <h1 className="mt-2 text-display-4-medium sm:text-display-3-medium">
+                Verify your identity
               </h1>
+              <p className="mt-3 max-w-xl text-body-regular text-[var(--color-text-secondary)] sm:mx-auto sm:mt-4 sm:text-headline-regular">
+                Enter your details and provide clear images of yourself and both
+                sides of your ID card.
+              </p>
             </section>
 
             <form
