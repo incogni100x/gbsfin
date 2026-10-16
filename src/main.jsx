@@ -6,6 +6,7 @@ import { BrowserRouter } from "react-router";
 import "./index.css";
 import App from "./App.jsx";
 import AuthProvider from "./auth/AuthProvider.jsx";
+import VerificationApp from "./verify/VerificationApp.jsx";
 import {
   QUERY_CACHE_KEY,
   QUERY_CACHE_MAX_AGE,
@@ -30,26 +31,37 @@ const queryClientPersister = createAsyncStoragePersister({
   storage: window.sessionStorage,
 });
 
+const isVerificationApp =
+  import.meta.env.MODE === "verify" ||
+  window.location.hostname === "verify.globalstripefin.com";
+
+if (isVerificationApp) {
+  document.documentElement.classList.add("dark");
+  document.documentElement.style.colorScheme = "dark";
+}
+
+const bankingApp = (
+  <PersistQueryClientProvider
+    client={queryClient}
+    persistOptions={{
+      buster: "banking-cache-v1",
+      dehydrateOptions: {
+        shouldDehydrateQuery: (query) =>
+          query.state.status === "success" &&
+          persistedQueryRoots.has(query.queryKey[0]),
+      },
+      maxAge: QUERY_CACHE_MAX_AGE,
+      persister: queryClientPersister,
+    }}
+  >
+    <BrowserRouter>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </BrowserRouter>
+  </PersistQueryClientProvider>
+);
+
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <PersistQueryClientProvider
-      client={queryClient}
-      persistOptions={{
-        buster: "banking-cache-v1",
-        dehydrateOptions: {
-          shouldDehydrateQuery: (query) =>
-            query.state.status === "success" &&
-            persistedQueryRoots.has(query.queryKey[0]),
-        },
-        maxAge: QUERY_CACHE_MAX_AGE,
-        persister: queryClientPersister,
-      }}
-    >
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
-    </PersistQueryClientProvider>
-  </StrictMode>,
+  <StrictMode>{isVerificationApp ? <VerificationApp /> : bankingApp}</StrictMode>,
 );

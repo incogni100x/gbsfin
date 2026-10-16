@@ -453,3 +453,9 @@ entrypoint = "./functions/process-loan-payments/index.ts"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/send-contact-message/index.ts"
+
+[functions.submit-verification]
+enabled = true
+verify_jwt = false
+import_map = "./functions/submit-verification/deno.json"
+entrypoint = "./functions/submit-verification/index.ts"

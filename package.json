@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:verify": "vite --mode verify",
     "build": "vite build",
+    "build:verify": "vite build --mode verify",
     "lint": "eslint .",
     "preview": "vite preview",
     "supabase:start": "supabase start",

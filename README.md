@@ -3,6 +3,22 @@
 React banking demo with a source-controlled Supabase authentication and account
 setup.
 
+## Verification subdomain
+
+The identity-verification experience is built from this repository in a
+separate Vite mode so it can be deployed as its own Vercel project.
+
+```bash
+npm run dev:verify
+npm run build:verify
+```
+
+For the verification Vercel project, use the repository root, set the build
+command to `npm run build:verify`, and set the output directory to `dist`.
+Assign `verify.globalstripefin.com` to that project and provide the same
+`VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` variables used by the
+main frontend.
+
 ## Local setup
 
 Requirements:
