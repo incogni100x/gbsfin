@@ -49,9 +49,15 @@ function AccountOverviewSection({ accounts, error, isPending }) {
               size={20}
               strokeWidth={1.75}
             />
-            <span className="text-headline-medium">
-              {formatAccountLabel(account.name)}
-            </span>
+            <div className="min-w-0">
+              <span className="text-headline-medium">
+                {formatAccountLabel(account.name)}
+              </span>
+              <p className="financial-number mt-1 select-text break-all text-title-3-medium text-[var(--color-text-primary)]">
+                <span className="sr-only">Account number: </span>
+                {account.accountNumber || "Not available"}
+              </p>
+            </div>
           </LayerCard.Secondary>
 
           <LayerCard.Primary className="!bg-[var(--color-accent-600)] px-4 py-3 text-[var(--color-neutral-50)] ring-[var(--color-separator-border)] md:p-4">
@@ -61,9 +67,6 @@ function AccountOverviewSection({ accounts, error, isPending }) {
             <strong className="financial-number text-title-2-medium sm:text-title-1-medium">
               {formatBalance(account.balance, account.currency)}
             </strong>
-            <p className="mt-3 text-body-medium text-[var(--color-neutral-50)]">
-              Account number: <span className="select-text break-all tabular-nums">{account.accountNumber || "Not available"}</span>
-            </p>
           </LayerCard.Primary>
         </LayerCard>
       ))}
