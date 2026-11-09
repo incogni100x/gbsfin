@@ -9,9 +9,9 @@ function AccountCardSkeleton() {
       <span className="sr-only">Loading your accounts</span>
       <LayerCard.Secondary className="!bg-[var(--color-background-secondary-default)] px-4 py-3 md:p-4">
         <span className="size-5 animate-pulse rounded bg-[var(--color-background-tertiary-default)] motion-reduce:animate-none" />
-        <div className="min-w-0">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
           <span className="block h-5 w-28 animate-pulse rounded bg-[var(--color-background-tertiary-default)] motion-reduce:animate-none" />
-          <span className="mt-1 block h-6 w-40 max-w-full animate-pulse rounded bg-[var(--color-background-tertiary-default)] motion-reduce:animate-none" />
+          <span className="block h-6 w-40 max-w-full animate-pulse rounded bg-[var(--color-background-tertiary-default)] motion-reduce:animate-none" />
         </div>
       </LayerCard.Secondary>
 

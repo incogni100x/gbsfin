@@ -49,11 +49,11 @@ function AccountOverviewSection({ accounts, error, isPending }) {
               size={20}
               strokeWidth={1.75}
             />
-            <div className="min-w-0">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
               <span className="text-headline-medium">
                 {formatAccountLabel(account.name)}
               </span>
-              <p className="financial-number mt-1 select-text break-all text-title-3-medium text-[var(--color-text-primary)]">
+              <p className="financial-number select-text break-all text-title-3-medium text-[var(--color-text-secondary)]">
                 <span className="sr-only">Account number: </span>
                 {account.accountNumber || "Not available"}
               </p>
