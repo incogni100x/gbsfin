@@ -61,6 +61,9 @@ function AccountOverviewSection({ accounts, error, isPending }) {
             <strong className="financial-number text-title-2-medium sm:text-title-1-medium">
               {formatBalance(account.balance, account.currency)}
             </strong>
+            <p className="mt-3 text-body-medium text-[var(--color-neutral-50)]">
+              Account number: <span className="select-text break-all tabular-nums">{account.accountNumber || "Not available"}</span>
+            </p>
           </LayerCard.Primary>
         </LayerCard>
       ))}
